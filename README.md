@@ -12,7 +12,7 @@
 ## Gestion des données et des questions
 - Les paramètres globaux (durée, bonus, paliers de niveau, couleurs de potions) sont centralisés dans `GAME_CONFIG`. 【F:quiz_alchemiste.html†L121-L155】
 - `gameData` conserve l'état courant : score, série, niveau, difficulté, historique et pools de questions. 【F:quiz_alchemiste.html†L157-L186】
-- `loadQuestionsFromXML()` parse le XML par catégorie, extrait texte, réponses, explications et détecte les difficultés disponibles, en loggant chaque étape. 【F:quiz_alchemiste.html†L210-L420】
+- `loadQuestionsFromJSON()` lit les cartes stockées dans `cards.json`, vérifie la structure, normalise catégories/réponses et recense les difficultés disponibles. 【F:quiz_alchemiste.html†L198-L324】【F:cards.json†L1-L111】
 - `initializeQuestionPool()` et `getNextIntelligentQuestion()` mélangent les questions par niveau, évitent les répétitions et maintiennent un historique tournant. 【F:quiz_alchemiste.html†L569-L643】
 
 ## Boucle de jeu et scoring
@@ -31,5 +31,5 @@
 - Le listener clavier autorise les réponses rapides avec les touches `1` à `4`. 【F:quiz_alchemiste.html†L1252-L1263】
 
 ## Version
- Le pied de page `footer.app-footer` affiche désormais la version `v1.0.1` de l'application. Mettez à jour ce numéro à chaque évolution fonctionnelle et synchronisez la mention dans cette section. 【F:quiz_alchemiste.html†L1298-L1303】
+ Le pied de page `footer.app-footer` affiche désormais la version `v1.0.2` de l'application. Mettez à jour ce numéro à chaque évolution fonctionnelle et synchronisez la mention dans cette section. 【F:quiz_alchemiste.html†L1178-L1181】
 
