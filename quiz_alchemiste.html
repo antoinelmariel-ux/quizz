@@ -18,7 +18,7 @@
         <p class="loading-text">Initialisation du laboratoire quantique...</p>
         <div class="loading-instructions">
             <p><strong>Contrôles :</strong></p>
-            <p>• Touches 1-4 pour réponses rapides • Ctrl+O pour charger XML • Ctrl+D pour télécharger exemple</p>
+            <p>• Touches 1-4 pour réponses rapides • Ctrl+O pour charger les cartes • Ctrl+D pour télécharger un exemple</p>
             <p>• Timer de 15 secondes par question • Bonus de vitesse pour réponses rapides</p>
         </div>
     </div>
@@ -147,146 +147,16 @@
             currentPotionIndex: 0
         };
 
-        const defaultXMLData = `<?xml version="1.0" encoding="UTF-8"?>
-<quiz>
-    <category name="Histoire" icon="🏛️" color="#8B4513">
-        <question difficulty="easy">
-            <text>Qui était le premier empereur romain ?</text>
-            <answers>
-                <answer correct="true">Auguste</answer>
-                <answer>Jules César</answer>
-                <answer>Néron</answer>
-                <answer>Trajan</answer>
-            </answers>
-            <explanation>Auguste (Octave) fut le premier empereur romain, régnant de 27 av. J.-C. à 14 ap. J.-C.</explanation>
-        </question>
-        <question difficulty="medium">
-            <text>En quelle année a eu lieu la bataille de Marignan ?</text>
-            <answers>
-                <answer correct="true">1515</answer>
-                <answer>1453</answer>
-                <answer>1492</answer>
-                <answer>1547</answer>
-            </answers>
-            <explanation>La bataille de Marignan s'est déroulée en 1515, remportée par François Ier.</explanation>
-        </question>
-        <question difficulty="hard">
-            <text>Quel traité a mis fin à la guerre de Trente Ans ?</text>
-            <answers>
-                <answer correct="true">Traité de Westphalie</answer>
-                <answer>Traité d'Utrecht</answer>
-                <answer>Traité de Versailles</answer>
-                <answer>Traité de Ryswick</answer>
-            </answers>
-            <explanation>Le traité de Westphalie (1648) a mis fin à la guerre de Trente Ans en Europe.</explanation>
-        </question>
-        <question difficulty="expert">
-            <text>Qui a dirigé la conjuration des Égaux en 1796 ?</text>
-            <answers>
-                <answer correct="true">Gracchus Babeuf</answer>
-                <answer>Georges Danton</answer>
-                <answer>Jean-Paul Marat</answer>
-                <answer>Jacques Pierre Brissot</answer>
-            </answers>
-            <explanation>Gracchus Babeuf dirigea cette conjuration communiste sous le Directoire.</explanation>
-        </question>
-    </category>
-    
-    <category name="Sciences" icon="🧪" color="#4169E1">
-        <question difficulty="easy">
-            <text>Quel est le symbole chimique de l'or ?</text>
-            <answers>
-                <answer correct="true">Au</answer>
-                <answer>Or</answer>
-                <answer>Go</answer>
-                <answer>Ag</answer>
-            </answers>
-            <explanation>Au vient du latin "aurum" qui signifie or.</explanation>
-        </question>
-        <question difficulty="medium">
-            <text>Combien de chromosomes possède l'être humain ?</text>
-            <answers>
-                <answer correct="true">46</answer>
-                <answer>44</answer>
-                <answer>48</answer>
-                <answer>42</answer>
-            </answers>
-            <explanation>L'être humain possède 46 chromosomes, soit 23 paires.</explanation>
-        </question>
-        <question difficulty="hard">
-            <text>Quelle est la constante de Planck ?</text>
-            <answers>
-                <answer correct="true">6.626 × 10⁻³⁴ J⋅s</answer>
-                <answer>3.14159 × 10⁻³⁴ J⋅s</answer>
-                <answer>9.109 × 10⁻³¹ kg</answer>
-                <answer>1.602 × 10⁻¹⁹ C</answer>
-            </answers>
-            <explanation>La constante de Planck est fondamentale en physique quantique.</explanation>
-        </question>
-        <question difficulty="expert">
-            <text>Quel principe quantique interdit à deux fermions d'occuper le même état quantique ?</text>
-            <answers>
-                <answer correct="true">Principe d'exclusion de Pauli</answer>
-                <answer>Principe d'incertitude d'Heisenberg</answer>
-                <answer>Principe de correspondance de Bohr</answer>
-                <answer>Principe de superposition</answer>
-            </answers>
-            <explanation>Le principe de Pauli est fondamental pour comprendre la structure électronique des atomes.</explanation>
-        </question>
-    </category>
-    
-    <category name="Littérature" icon="📚" color="#800080">
-        <question difficulty="easy">
-            <text>Qui a écrit "Les Misérables" ?</text>
-            <answers>
-                <answer correct="true">Victor Hugo</answer>
-                <answer>Émile Zola</answer>
-                <answer>Gustave Flaubert</answer>
-                <answer>Alexandre Dumas</answer>
-            </answers>
-            <explanation>"Les Misérables" est l'œuvre majeure de Victor Hugo, publiée en 1862.</explanation>
-        </question>
-        <question difficulty="medium">
-            <text>Dans quel pays se déroule l'action du "Comte de Monte-Cristo" ?</text>
-            <answers>
-                <answer correct="true">France</answer>
-                <answer>Italie</answer>
-                <answer>Espagne</answer>
-                <answer>Angleterre</answer>
-            </answers>
-            <explanation>L'action du Comte de Monte-Cristo d'Alexandre Dumas se déroule principalement en France.</explanation>
-        </question>
-        <question difficulty="hard">
-            <text>Quel mouvement littéraire André Breton a-t-il fondé ?</text>
-            <answers>
-                <answer correct="true">Surréalisme</answer>
-                <answer>Dadaïsme</answer>
-                <answer>Existentialisme</answer>
-                <answer>Nouveau Roman</answer>
-            </answers>
-            <explanation>André Breton est le père du mouvement surréaliste avec son Manifeste de 1924.</explanation>
-        </question>
-        <question difficulty="expert">
-            <text>Qui a écrit "À la recherche du temps perdu" ?</text>
-            <answers>
-                <answer correct="true">Marcel Proust</answer>
-                <answer>André Gide</answer>
-                <answer>Paul Valéry</answer>
-                <answer>Jean Cocteau</answer>
-            </answers>
-            <explanation>Cette œuvre monumentale de Proust est considérée comme l'un des chefs-d'œuvre de la littérature mondiale.</explanation>
-        </question>
-    </category>
-</quiz>`;
+        const CARDS_FILE_PATH = 'cards.json';
 
         async function initGame() {
             try {
                 console.log("🚀 Démarrage de l'initialisation...");
-                
+
                 createFloatingOrbs();
                 console.log("✅ Orbes créés");
-                
-                loadQuestionsFromXML(defaultXMLData);
+
+                await loadQuestionsFromFile(CARDS_FILE_PATH);
                 console.log("✅ Questions chargées:", gameData.questions.length);
                 console.log("✅ Difficultés détectées:", gameData.availableDifficulties);
                 
@@ -327,117 +197,125 @@
             }
         }
 
-        function loadQuestionsFromXML(xmlString) {
-            console.log('📄 Début du parsing XML...');
-            
+        async function loadQuestionsFromFile(filePath) {
+            console.log('📄 Chargement des cartes depuis le fichier JSON...');
+
             try {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-                
-                // Vérifier s'il y a des erreurs de parsing XML
-                const parseError = xmlDoc.querySelector('parsererror');
-                if (parseError) {
-                    throw new Error('Erreur de parsing XML: ' + parseError.textContent);
+                const response = await fetch(filePath);
+
+                if (!response.ok) {
+                    throw new Error(`Impossible de charger le fichier (${response.status} ${response.statusText})`);
                 }
-                
-                const categories = xmlDoc.querySelectorAll('category');
-                console.log(`📂 Nombre de catégories trouvées: ${categories.length}`);
-                
+
+                const data = await response.json();
+                loadQuestionsFromJSON(data);
+
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement du fichier de cartes:', error);
+                showNotification('❌ Erreur: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        function loadQuestionsFromJSON(data) {
+            console.log('🧾 Début du traitement des cartes JSON...');
+
+            try {
+                if (!data || !Array.isArray(data.categories)) {
+                    throw new Error('Format de cartes invalide: le tableau "categories" est manquant');
+                }
+
                 gameData.questions = [];
                 const foundDifficulties = new Set();
-                
-                categories.forEach((category, categoryIndex) => {
-                    const categoryName = category.getAttribute('name') || `Catégorie ${categoryIndex + 1}`;
-                    const categoryIcon = category.getAttribute('icon') || '📝';
-                    const categoryColor = category.getAttribute('color') || '#4169E1';
-                    
+
+                data.categories.forEach((category, categoryIndex) => {
+                    const categoryName = category?.name?.trim() || `Catégorie ${categoryIndex + 1}`;
+                    const categoryIcon = category?.icon?.trim() || '📝';
+                    const categoryColor = category?.color?.trim() || '#4169E1';
+
                     console.log(`📁 Traitement de la catégorie: ${categoryName}`);
-                    
-                    const questions = category.querySelectorAll('question');
-                    console.log(`❓ Questions dans ${categoryName}: ${questions.length}`);
-                    
-                    questions.forEach((q, questionIndex) => {
+
+                    if (!Array.isArray(category.questions)) {
+                        console.warn(`⚠️ Catégorie ${categoryName}: aucune question définie`);
+                        return;
+                    }
+
+                    category.questions.forEach((question, questionIndex) => {
                         try {
-                            const difficulty = q.getAttribute('difficulty') || 'medium';
+                            const difficulty = (question?.difficulty || 'medium').trim();
                             foundDifficulties.add(difficulty);
-                            
-                            const questionTextEl = q.querySelector('text');
-                            const explanationEl = q.querySelector('explanation');
-                            
-                            if (!questionTextEl) {
+
+                            const questionText = question?.text?.trim();
+                            if (!questionText) {
                                 console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: pas de texte`);
                                 return;
                             }
-                            
-                            const questionText = questionTextEl.textContent.trim();
-                            const explanation = explanationEl ? explanationEl.textContent.trim() : 'Pas d\'explication disponible.';
-                            
-                            const answers = Array.from(q.querySelectorAll('answer')).map((a, answerIndex) => {
-                                const text = a.textContent.trim();
-                                const correct = a.getAttribute('correct') === 'true';
-                                
-                                if (!text) {
-                                    console.warn(`⚠️ Réponse ${answerIndex + 1} vide dans question ${questionIndex + 1}`);
-                                }
-                                
-                                return {
-                                    text: text || `Réponse ${answerIndex + 1}`,
-                                    correct: correct
-                                };
-                            });
-                            
-                            if (answers.length === 0) {
+
+                            const explanation = question?.explanation?.trim() || "Pas d'explication disponible.";
+
+                            if (!Array.isArray(question.answers) || question.answers.length === 0) {
                                 console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: aucune réponse`);
                                 return;
                             }
-                            
+
+                            const answers = question.answers.map((answer, answerIndex) => {
+                                const text = answer?.text?.trim() || `Réponse ${answerIndex + 1}`;
+                                const correct = Boolean(answer?.correct);
+
+                                if (!answer?.text) {
+                                    console.warn(`⚠️ Réponse ${answerIndex + 1} vide dans question ${questionIndex + 1}`);
+                                }
+
+                                return {
+                                    text,
+                                    correct
+                                };
+                            });
+
                             const hasCorrectAnswer = answers.some(a => a.correct);
                             if (!hasCorrectAnswer) {
                                 console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: aucune réponse correcte`);
-                                // Marquer la première réponse comme correcte par défaut
                                 answers[0].correct = true;
                             }
-                            
+
                             gameData.questions.push({
                                 category: categoryName,
                                 icon: categoryIcon,
                                 color: categoryColor,
-                                difficulty: difficulty,
+                                difficulty,
                                 question: questionText,
-                                answers: answers,
-                                explanation: explanation
+                                answers,
+                                explanation
                             });
-                            
+
                             console.log(`✅ Question ajoutée: ${difficulty} - ${questionText.substring(0, 50)}...`);
-                            
+
                         } catch (error) {
                             console.error(`❌ Erreur lors du traitement de la question ${questionIndex + 1}:`, error);
                         }
                     });
                 });
-                
-                // Trier les difficultés dans l'ordre
+
                 gameData.availableDifficulties = Array.from(foundDifficulties).sort((a, b) => {
                     const order = ['easy', 'medium', 'hard', 'expert'];
                     return order.indexOf(a) - order.indexOf(b);
                 });
-                
-                console.log(`✅ Parsing terminé:`);
+
+                console.log('✅ Cartes traitées avec succès');
                 console.log(`📊 Total questions: ${gameData.questions.length}`);
                 console.log(`🎯 Difficultés détectées: ${Array.from(foundDifficulties).join(', ')}`);
                 console.log(`📋 Difficultés triées: ${gameData.availableDifficulties.join(', ')}`);
-                
-                // Vérification finale
+
                 if (gameData.questions.length === 0) {
-                    throw new Error('Aucune question valide trouvée dans le fichier XML');
+                    throw new Error('Aucune question valide trouvée dans le fichier de cartes');
                 }
-                
+
                 if (gameData.availableDifficulties.length === 0) {
-                    throw new Error('Aucune difficulté détectée dans le fichier XML');
+                    throw new Error('Aucune difficulté détectée dans le fichier de cartes');
                 }
-                
+
             } catch (error) {
-                console.error('❌ Erreur lors du chargement XML:', error);
+                console.error('❌ Erreur lors du traitement des cartes JSON:', error);
                 showNotification('❌ Erreur: ' + error.message, 'error');
                 throw error;
             }
@@ -451,7 +329,7 @@
             
             if (gameData.availableDifficulties.length === 0) {
                 console.error('❌ Aucune difficulté disponible');
-                grid.innerHTML = '<div style="color: var(--text-primary); text-align: center; grid-column: 1/-1;">❌ Aucune difficulté détectée dans le fichier XML</div>';
+                grid.innerHTML = '<div style="color: var(--text-primary); text-align: center; grid-column: 1/-1;">❌ Aucune difficulté détectée dans le fichier de cartes</div>';
                 return;
             }
             
@@ -1299,7 +1177,7 @@
 
     <footer class="app-footer">
         <span>© 2025 Quiz Alchimiste</span>
-        <span class="app-version">Version v1.0.1</span>
+        <span class="app-version">Version v1.0.2</span>
     </footer>
 </body>
 </html><!DOCTYPE html>

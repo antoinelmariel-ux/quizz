@@ -1,0 +1,157 @@
+{
+  "categories": [
+    {
+      "name": "Histoire",
+      "icon": "🏛️",
+      "color": "#8B4513",
+      "questions": [
+        {
+          "difficulty": "easy",
+          "text": "Qui était le premier empereur romain ?",
+          "answers": [
+            {"text": "Auguste", "correct": true},
+            {"text": "Jules César"},
+            {"text": "Néron"},
+            {"text": "Trajan"}
+          ],
+          "explanation": "Auguste (Octave) fut le premier empereur romain, régnant de 27 av. J.-C. à 14 ap. J.-C."
+        },
+        {
+          "difficulty": "medium",
+          "text": "En quelle année a eu lieu la bataille de Marignan ?",
+          "answers": [
+            {"text": "1515", "correct": true},
+            {"text": "1453"},
+            {"text": "1492"},
+            {"text": "1547"}
+          ],
+          "explanation": "La bataille de Marignan s'est déroulée en 1515, remportée par François Ier."
+        },
+        {
+          "difficulty": "hard",
+          "text": "Quel traité a mis fin à la guerre de Trente Ans ?",
+          "answers": [
+            {"text": "Traité de Westphalie", "correct": true},
+            {"text": "Traité d'Utrecht"},
+            {"text": "Traité de Versailles"},
+            {"text": "Traité de Ryswick"}
+          ],
+          "explanation": "Le traité de Westphalie (1648) a mis fin à la guerre de Trente Ans en Europe."
+        },
+        {
+          "difficulty": "expert",
+          "text": "Qui a dirigé la conjuration des Égaux en 1796 ?",
+          "answers": [
+            {"text": "Gracchus Babeuf", "correct": true},
+            {"text": "Georges Danton"},
+            {"text": "Jean-Paul Marat"},
+            {"text": "Jacques Pierre Brissot"}
+          ],
+          "explanation": "Gracchus Babeuf dirigea cette conjuration communiste sous le Directoire."
+        }
+      ]
+    },
+    {
+      "name": "Sciences",
+      "icon": "🧪",
+      "color": "#4169E1",
+      "questions": [
+        {
+          "difficulty": "easy",
+          "text": "Quel est le symbole chimique de l'or ?",
+          "answers": [
+            {"text": "Au", "correct": true},
+            {"text": "Or"},
+            {"text": "Go"},
+            {"text": "Ag"}
+          ],
+          "explanation": "Au vient du latin \"aurum\" qui signifie or."
+        },
+        {
+          "difficulty": "medium",
+          "text": "Combien de chromosomes possède l'être humain ?",
+          "answers": [
+            {"text": "46", "correct": true},
+            {"text": "44"},
+            {"text": "48"},
+            {"text": "42"}
+          ],
+          "explanation": "L'être humain possède 46 chromosomes, soit 23 paires."
+        },
+        {
+          "difficulty": "hard",
+          "text": "Quelle est la constante de Planck ?",
+          "answers": [
+            {"text": "6.626 × 10⁻³⁴ J⋅s", "correct": true},
+            {"text": "3.14159 × 10⁻³⁴ J⋅s"},
+            {"text": "9.109 × 10⁻³¹ kg"},
+            {"text": "1.602 × 10⁻¹⁹ C"}
+          ],
+          "explanation": "La constante de Planck est fondamentale en physique quantique."
+        },
+        {
+          "difficulty": "expert",
+          "text": "Quel principe quantique interdit à deux fermions d'occuper le même état quantique ?",
+          "answers": [
+            {"text": "Principe d'exclusion de Pauli", "correct": true},
+            {"text": "Principe d'incertitude d'Heisenberg"},
+            {"text": "Principe de correspondance de Bohr"},
+            {"text": "Principe de superposition"}
+          ],
+          "explanation": "Le principe de Pauli est fondamental pour comprendre la structure électronique des atomes."
+        }
+      ]
+    },
+    {
+      "name": "Littérature",
+      "icon": "📚",
+      "color": "#800080",
+      "questions": [
+        {
+          "difficulty": "easy",
+          "text": "Qui a écrit \"Les Misérables\" ?",
+          "answers": [
+            {"text": "Victor Hugo", "correct": true},
+            {"text": "Émile Zola"},
+            {"text": "Gustave Flaubert"},
+            {"text": "Alexandre Dumas"}
+          ],
+          "explanation": "\"Les Misérables\" est l'œuvre majeure de Victor Hugo, publiée en 1862."
+        },
+        {
+          "difficulty": "medium",
+          "text": "Dans quel pays se déroule l'action du \"Comte de Monte-Cristo\" ?",
+          "answers": [
+            {"text": "France", "correct": true},
+            {"text": "Italie"},
+            {"text": "Espagne"},
+            {"text": "Angleterre"}
+          ],
+          "explanation": "L'action du Comte de Monte-Cristo d'Alexandre Dumas se déroule principalement en France."
+        },
+        {
+          "difficulty": "hard",
+          "text": "Quel mouvement littéraire André Breton a-t-il fondé ?",
+          "answers": [
+            {"text": "Surréalisme", "correct": true},
+            {"text": "Dadaïsme"},
+            {"text": "Existentialisme"},
+            {"text": "Nouveau Roman"}
+          ],
+          "explanation": "André Breton est le père du mouvement surréaliste avec son Manifeste de 1924."
+        },
+        {
+          "difficulty": "expert",
+          "text": "Qui a écrit \"À la recherche du temps perdu\" ?",
+          "answers": [
+            {"text": "Marcel Proust", "correct": true},
+            {"text": "André Gide"},
+            {"text": "Paul Valéry"},
+            {"text": "Jean Cocteau"}
+          ],
+          "explanation": "Cette œuvre monumentale de Proust est considérée comme l'un des chefs-d'œuvre de la littérature mondiale."
+        }
+      ]
+    }
+  ]
+}
