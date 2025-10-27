@@ -1,0 +1,2452 @@
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="floating-orbs" id="floatingOrbs"></div>
+
+    <div class="difficulty-selection" id="difficultySelection">
+        <h1 class="difficulty-title">🧪 Choisissez votre Niveau</h1>
+        <p class="difficulty-subtitle">
+            Sélectionnez votre niveau de difficulté initial. Il évoluera automatiquement selon vos performances !
+        </p>
+        <div class="difficulty-grid" id="difficultyGrid"></div>
+    </div>
+
+    <div class="loading-screen hidden" id="loadingScreen">
+        <h1 class="loading-title">Quiz Alchimiste 2025</h1>
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Initialisation du laboratoire quantique...</p>
+        <div class="loading-instructions">
+            <p><strong>Contrôles :</strong></p>
+            <p>• Touches 1-4 pour réponses rapides • Ctrl+O pour charger XML • Ctrl+D pour télécharger exemple</p>
+            <p>• Timer de 15 secondes par question • Bonus de vitesse pour réponses rapides</p>
+        </div>
+    </div>
+
+    <div class="game-container hidden" id="gameContainer">
+        <div class="header fade-in">
+            <h1 class="title">Laboratoire Quantique</h1>
+            <div class="stats-grid">
+                <div class="stat-card score">
+                    <div class="stat-value" id="scoreValue">0</div>
+                    <div class="stat-label">Score</div>
+                </div>
+                <div class="stat-card streak">
+                    <div class="stat-value" id="streakValue">0</div>
+                    <div class="stat-label">Série</div>
+                </div>
+                <div class="stat-card potions">
+                    <div class="stat-value" id="potionsValue">0</div>
+                    <div class="stat-label">Potions</div>
+                </div>
+                <div class="stat-card level">
+                    <div class="stat-value" id="levelValue">1</div>
+                    <div class="stat-label">Niveau</div>
+                </div>
+                <div class="stat-card timer">
+                    <div class="stat-value" id="timerValue">15</div>
+                    <div class="stat-label">Temps</div>
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="changeDifficulty()">⚙️ Difficulté</button>
+            </div>
+        </div>
+
+        <div class="ingredients-panel slide-up">
+            <h3 class="panel-title">🧪 Ingrédients Collectés</h3>
+            <div class="ingredients-grid" id="ingredientsGrid"></div>
+        </div>
+
+        <div class="cauldron-area slide-up">
+            <div class="timer-ring">
+                <div class="timer-circle" id="timerCircle">
+                    <div class="timer-progress" id="timerProgress"></div>
+                    <div class="timer-text" id="timerText">15</div>
+                </div>
+            </div>
+            <div class="cauldron-container">
+                <div class="cauldron" id="cauldron">
+                    <div class="cauldron-liquid" id="cauldronLiquid">
+                        <div class="liquid-surface"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="question-panel slide-up">
+            <div class="question-header">
+                <div class="question-number" id="questionNumber">Question 1</div>
+                <div class="difficulty-badge easy" id="difficultyBadge">Facile</div>
+            </div>
+            <div class="question" id="questionText">
+                Chargement de votre première énigme quantique...
+            </div>
+            <div class="answers" id="answersContainer"></div>
+        </div>
+    </div>
+
+    <div class="explanation-panel" id="explanationPanel">
+        <div class="explanation-dismiss" onclick="hideExplanation()">&times;</div>
+        <div class="explanation-header">
+            <span class="explanation-icon" id="explanationIcon">💡</span>
+            <span class="explanation-title" id="explanationTitle">Explication</span>
+        </div>
+        <div class="explanation-content" id="explanationContent">
+            Voici l'explication de la réponse...
+        </div>
+        <div class="explanation-progress" id="explanationProgress"></div>
+    </div>
+
+    <script>
+        const GAME_CONFIG = {
+            questionTime: 15,
+            speedBonusThreshold: 10,
+            speedBonusMultiplier: 1.5,
+            progressTarget: 100,
+            potionBonus: 500,
+            difficultyLevels: {
+                'easy': { name: 'Apprenti', icon: '🌱', description: 'Questions de base', baseScore: 100, levelUpThreshold: 5 },
+                'medium': { name: 'Adepte', icon: '⚡', description: 'Questions intermédiaires', baseScore: 150, levelUpThreshold: 8 },
+                'hard': { name: 'Maître', icon: '🔥', description: 'Questions avancées', baseScore: 200, levelUpThreshold: 12 },
+                'expert': { name: 'Grand Maître', icon: '💎', description: 'Questions expertes', baseScore: 300, levelUpThreshold: 15 }
+            },
+            potionColors: [
+                { gradient: 'linear-gradient(135deg, #4b0082, #8a2be2, #9370db)', name: 'Potion Violette', glow: 'rgba(138, 43, 226, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #228b22, #32cd32, #7fff00)', name: 'Élixir Émeraude', glow: 'rgba(50, 205, 50, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #ff4500, #ff6347, #ffa500)', name: 'Philtre de Feu', glow: 'rgba(255, 69, 0, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #1e90ff, #00bfff, #87ceeb)', name: 'Essence Céleste', glow: 'rgba(30, 144, 255, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #ffd700, #ffb347, #ff8c42)', name: 'Nectar Doré', glow: 'rgba(255, 215, 0, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #dc143c, #ff1493, #ff69b4)', name: 'Sang de Dragon', glow: 'rgba(220, 20, 60, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #9932cc, #ba55d3, #da70d6)', name: 'Brume Mystique', glow: 'rgba(153, 50, 204, 0.8)' },
+                { gradient: 'linear-gradient(135deg, #008b8b, #20b2aa, #48d1cc)', name: 'Flux Aquatique', glow: 'rgba(0, 139, 139, 0.8)' }
+            ]
+        };
+
+        let gameData = {
+            score: 0,
+            streak: 0,
+            potions: 0,
+            level: 1,
+            currentDifficulty: 'easy',
+            currentQuestion: null,
+            questions: [],
+            availableDifficulties: [],
+            ingredients: [],
+            questionIndex: 0,
+            progress: 0,
+            timeLeft: GAME_CONFIG.questionTime,
+            timerInterval: null,
+            questionStartTime: 0,
+            isAnswering: false,
+            correctAnswersInLevel: 0,
+            questionPools: {},
+            questionHistory: [],
+            questionsSeenInLevel: new Set(),
+            lastShuffleTimestamp: 0,
+            currentPotionIndex: 0
+        };
+
+        const defaultXMLData = `<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+    <category name="Histoire" icon="🏛️" color="#8B4513">
+        <question difficulty="easy">
+            <text>Qui était le premier empereur romain ?</text>
+            <answers>
+                <answer correct="true">Auguste</answer>
+                <answer>Jules César</answer>
+                <answer>Néron</answer>
+                <answer>Trajan</answer>
+            </answers>
+            <explanation>Auguste (Octave) fut le premier empereur romain, régnant de 27 av. J.-C. à 14 ap. J.-C.</explanation>
+        </question>
+        <question difficulty="medium">
+            <text>En quelle année a eu lieu la bataille de Marignan ?</text>
+            <answers>
+                <answer correct="true">1515</answer>
+                <answer>1453</answer>
+                <answer>1492</answer>
+                <answer>1547</answer>
+            </answers>
+            <explanation>La bataille de Marignan s'est déroulée en 1515, remportée par François Ier.</explanation>
+        </question>
+        <question difficulty="hard">
+            <text>Quel traité a mis fin à la guerre de Trente Ans ?</text>
+            <answers>
+                <answer correct="true">Traité de Westphalie</answer>
+                <answer>Traité d'Utrecht</answer>
+                <answer>Traité de Versailles</answer>
+                <answer>Traité de Ryswick</answer>
+            </answers>
+            <explanation>Le traité de Westphalie (1648) a mis fin à la guerre de Trente Ans en Europe.</explanation>
+        </question>
+        <question difficulty="expert">
+            <text>Qui a dirigé la conjuration des Égaux en 1796 ?</text>
+            <answers>
+                <answer correct="true">Gracchus Babeuf</answer>
+                <answer>Georges Danton</answer>
+                <answer>Jean-Paul Marat</answer>
+                <answer>Jacques Pierre Brissot</answer>
+            </answers>
+            <explanation>Gracchus Babeuf dirigea cette conjuration communiste sous le Directoire.</explanation>
+        </question>
+    </category>
+    
+    <category name="Sciences" icon="🧪" color="#4169E1">
+        <question difficulty="easy">
+            <text>Quel est le symbole chimique de l'or ?</text>
+            <answers>
+                <answer correct="true">Au</answer>
+                <answer>Or</answer>
+                <answer>Go</answer>
+                <answer>Ag</answer>
+            </answers>
+            <explanation>Au vient du latin "aurum" qui signifie or.</explanation>
+        </question>
+        <question difficulty="medium">
+            <text>Combien de chromosomes possède l'être humain ?</text>
+            <answers>
+                <answer correct="true">46</answer>
+                <answer>44</answer>
+                <answer>48</answer>
+                <answer>42</answer>
+            </answers>
+            <explanation>L'être humain possède 46 chromosomes, soit 23 paires.</explanation>
+        </question>
+        <question difficulty="hard">
+            <text>Quelle est la constante de Planck ?</text>
+            <answers>
+                <answer correct="true">6.626 × 10⁻³⁴ J⋅s</answer>
+                <answer>3.14159 × 10⁻³⁴ J⋅s</answer>
+                <answer>9.109 × 10⁻³¹ kg</answer>
+                <answer>1.602 × 10⁻¹⁹ C</answer>
+            </answers>
+            <explanation>La constante de Planck est fondamentale en physique quantique.</explanation>
+        </question>
+        <question difficulty="expert">
+            <text>Quel principe quantique interdit à deux fermions d'occuper le même état quantique ?</text>
+            <answers>
+                <answer correct="true">Principe d'exclusion de Pauli</answer>
+                <answer>Principe d'incertitude d'Heisenberg</answer>
+                <answer>Principe de correspondance de Bohr</answer>
+                <answer>Principe de superposition</answer>
+            </answers>
+            <explanation>Le principe de Pauli est fondamental pour comprendre la structure électronique des atomes.</explanation>
+        </question>
+    </category>
+    
+    <category name="Littérature" icon="📚" color="#800080">
+        <question difficulty="easy">
+            <text>Qui a écrit "Les Misérables" ?</text>
+            <answers>
+                <answer correct="true">Victor Hugo</answer>
+                <answer>Émile Zola</answer>
+                <answer>Gustave Flaubert</answer>
+                <answer>Alexandre Dumas</answer>
+            </answers>
+            <explanation>"Les Misérables" est l'œuvre majeure de Victor Hugo, publiée en 1862.</explanation>
+        </question>
+        <question difficulty="medium">
+            <text>Dans quel pays se déroule l'action du "Comte de Monte-Cristo" ?</text>
+            <answers>
+                <answer correct="true">France</answer>
+                <answer>Italie</answer>
+                <answer>Espagne</answer>
+                <answer>Angleterre</answer>
+            </answers>
+            <explanation>L'action du Comte de Monte-Cristo d'Alexandre Dumas se déroule principalement en France.</explanation>
+        </question>
+        <question difficulty="hard">
+            <text>Quel mouvement littéraire André Breton a-t-il fondé ?</text>
+            <answers>
+                <answer correct="true">Surréalisme</answer>
+                <answer>Dadaïsme</answer>
+                <answer>Existentialisme</answer>
+                <answer>Nouveau Roman</answer>
+            </answers>
+            <explanation>André Breton est le père du mouvement surréaliste avec son Manifeste de 1924.</explanation>
+        </question>
+        <question difficulty="expert">
+            <text>Qui a écrit "À la recherche du temps perdu" ?</text>
+            <answers>
+                <answer correct="true">Marcel Proust</answer>
+                <answer>André Gide</answer>
+                <answer>Paul Valéry</answer>
+                <answer>Jean Cocteau</answer>
+            </answers>
+            <explanation>Cette œuvre monumentale de Proust est considérée comme l'un des chefs-d'œuvre de la littérature mondiale.</explanation>
+        </question>
+    </category>
+</quiz>`;
+
+        async function initGame() {
+            try {
+                console.log("🚀 Démarrage de l'initialisation...");
+                
+                createFloatingOrbs();
+                console.log("✅ Orbes créés");
+                
+                loadQuestionsFromXML(defaultXMLData);
+                console.log("✅ Questions chargées:", gameData.questions.length);
+                console.log("✅ Difficultés détectées:", gameData.availableDifficulties);
+                
+                if (gameData.availableDifficulties.length === 0) {
+                    console.error("❌ Aucune difficulté détectée!");
+                    showNotification("❌ Erreur: Aucune difficulté trouvée dans les données", 'error');
+                    return;
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                console.log("✅ Chargement simulé terminé");
+                
+                showDifficultySelection();
+                console.log("✅ Écran de sélection affiché");
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement:', error);
+                showNotification('❌ Erreur lors de l\'initialisation: ' + error.message, 'error');
+            }
+        }
+
+        function createFloatingOrbs() {
+            const container = document.getElementById('floatingOrbs');
+            
+            for (let i = 0; i < 8; i++) {
+                const orb = document.createElement('div');
+                orb.className = 'orb';
+                
+                const size = Math.random() * 100 + 50;
+                orb.style.width = size + 'px';
+                orb.style.height = size + 'px';
+                orb.style.left = Math.random() * 100 + '%';
+                orb.style.top = Math.random() * 100 + '%';
+                orb.style.animationDelay = Math.random() * 8 + 's';
+                orb.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                
+                container.appendChild(orb);
+            }
+        }
+
+        function loadQuestionsFromXML(xmlString) {
+            console.log('📄 Début du parsing XML...');
+            
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+                
+                // Vérifier s'il y a des erreurs de parsing XML
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    throw new Error('Erreur de parsing XML: ' + parseError.textContent);
+                }
+                
+                const categories = xmlDoc.querySelectorAll('category');
+                console.log(`📂 Nombre de catégories trouvées: ${categories.length}`);
+                
+                gameData.questions = [];
+                const foundDifficulties = new Set();
+                
+                categories.forEach((category, categoryIndex) => {
+                    const categoryName = category.getAttribute('name') || `Catégorie ${categoryIndex + 1}`;
+                    const categoryIcon = category.getAttribute('icon') || '📝';
+                    const categoryColor = category.getAttribute('color') || '#4169E1';
+                    
+                    console.log(`📁 Traitement de la catégorie: ${categoryName}`);
+                    
+                    const questions = category.querySelectorAll('question');
+                    console.log(`❓ Questions dans ${categoryName}: ${questions.length}`);
+                    
+                    questions.forEach((q, questionIndex) => {
+                        try {
+                            const difficulty = q.getAttribute('difficulty') || 'medium';
+                            foundDifficulties.add(difficulty);
+                            
+                            const questionTextEl = q.querySelector('text');
+                            const explanationEl = q.querySelector('explanation');
+                            
+                            if (!questionTextEl) {
+                                console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: pas de texte`);
+                                return;
+                            }
+                            
+                            const questionText = questionTextEl.textContent.trim();
+                            const explanation = explanationEl ? explanationEl.textContent.trim() : 'Pas d\'explication disponible.';
+                            
+                            const answers = Array.from(q.querySelectorAll('answer')).map((a, answerIndex) => {
+                                const text = a.textContent.trim();
+                                const correct = a.getAttribute('correct') === 'true';
+                                
+                                if (!text) {
+                                    console.warn(`⚠️ Réponse ${answerIndex + 1} vide dans question ${questionIndex + 1}`);
+                                }
+                                
+                                return {
+                                    text: text || `Réponse ${answerIndex + 1}`,
+                                    correct: correct
+                                };
+                            });
+                            
+                            if (answers.length === 0) {
+                                console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: aucune réponse`);
+                                return;
+                            }
+                            
+                            const hasCorrectAnswer = answers.some(a => a.correct);
+                            if (!hasCorrectAnswer) {
+                                console.warn(`⚠️ Question ${questionIndex + 1} dans ${categoryName}: aucune réponse correcte`);
+                                // Marquer la première réponse comme correcte par défaut
+                                answers[0].correct = true;
+                            }
+                            
+                            gameData.questions.push({
+                                category: categoryName,
+                                icon: categoryIcon,
+                                color: categoryColor,
+                                difficulty: difficulty,
+                                question: questionText,
+                                answers: answers,
+                                explanation: explanation
+                            });
+                            
+                            console.log(`✅ Question ajoutée: ${difficulty} - ${questionText.substring(0, 50)}...`);
+                            
+                        } catch (error) {
+                            console.error(`❌ Erreur lors du traitement de la question ${questionIndex + 1}:`, error);
+                        }
+                    });
+                });
+                
+                // Trier les difficultés dans l'ordre
+                gameData.availableDifficulties = Array.from(foundDifficulties).sort((a, b) => {
+                    const order = ['easy', 'medium', 'hard', 'expert'];
+                    return order.indexOf(a) - order.indexOf(b);
+                });
+                
+                console.log(`✅ Parsing terminé:`);
+                console.log(`📊 Total questions: ${gameData.questions.length}`);
+                console.log(`🎯 Difficultés détectées: ${Array.from(foundDifficulties).join(', ')}`);
+                console.log(`📋 Difficultés triées: ${gameData.availableDifficulties.join(', ')}`);
+                
+                // Vérification finale
+                if (gameData.questions.length === 0) {
+                    throw new Error('Aucune question valide trouvée dans le fichier XML');
+                }
+                
+                if (gameData.availableDifficulties.length === 0) {
+                    throw new Error('Aucune difficulté détectée dans le fichier XML');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement XML:', error);
+                showNotification('❌ Erreur: ' + error.message, 'error');
+                throw error;
+            }
+        }
+
+        function showDifficultySelection() {
+            const grid = document.getElementById('difficultyGrid');
+            grid.innerHTML = '';
+            
+            console.log('🎯 Difficultés disponibles:', gameData.availableDifficulties);
+            
+            if (gameData.availableDifficulties.length === 0) {
+                console.error('❌ Aucune difficulté disponible');
+                grid.innerHTML = '<div style="color: var(--text-primary); text-align: center; grid-column: 1/-1;">❌ Aucune difficulté détectée dans le fichier XML</div>';
+                return;
+            }
+            
+            gameData.availableDifficulties.forEach(difficulty => {
+                const config = GAME_CONFIG.difficultyLevels[difficulty];
+                
+                if (!config) {
+                    console.warn(`⚠️ Configuration manquante pour la difficulté: ${difficulty}`);
+                    return;
+                }
+                
+                const card = document.createElement('div');
+                card.className = `difficulty-card ${difficulty}`;
+                card.style.cursor = 'pointer';
+                card.onclick = () => {
+                    console.log(`🎯 Sélection de la difficulté: ${difficulty}`);
+                    startGameWithDifficulty(difficulty);
+                };
+                
+                card.innerHTML = `
+                    <span class="difficulty-icon">${config.icon}</span>
+                    <div class="difficulty-name">${config.name}</div>
+                    <div class="difficulty-description">${config.description}</div>
+                    <div class="difficulty-stats">
+                        <div class="difficulty-stat">
+                            <span class="difficulty-stat-value">${config.baseScore}</span>
+                            <span>Points base</span>
+                        </div>
+                        <div class="difficulty-stat">
+                            <span class="difficulty-stat-value">${config.levelUpThreshold}</span>
+                            <span>Pour montée</span>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+                console.log(`✅ Carte créée pour: ${difficulty}`);
+            });
+        }
+
+        async function startGameWithDifficulty(difficulty) {
+            console.log(`🎯 Démarrage du jeu avec difficulté: ${difficulty}`);
+            
+            gameData.currentDifficulty = difficulty;
+            gameData.correctAnswersInLevel = 0;
+            gameData.progress = 0; // Réinitialiser la progression
+            
+            // Réinitialiser le système de mélange intelligent
+            gameData.questionPools = {};
+            gameData.questionHistory = [];
+            gameData.questionsSeenInLevel.clear();
+            gameData.questionIndex = 0;
+            
+            // Masquer l'écran de sélection
+            document.getElementById('difficultySelection').style.display = 'none';
+            
+            // Afficher l'écran de chargement
+            const loadingScreen = document.getElementById('loadingScreen');
+            loadingScreen.classList.remove('hidden');
+            
+            // Simuler le chargement et initialiser le pool
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Vérifier qu'on a des questions pour cette difficulté
+            const questionsForLevel = getQuestionsForDifficulty(difficulty);
+            console.log(`📊 Questions trouvées pour ${difficulty}:`, questionsForLevel.length);
+            
+            if (questionsForLevel.length === 0) {
+                console.error(`❌ Aucune question trouvée pour ${difficulty}`);
+                showNotification(`❌ Aucune question disponible pour le niveau ${difficulty}`, 'error');
+                // Revenir à l'écran de sélection
+                loadingScreen.classList.add('hidden');
+                document.getElementById('difficultySelection').style.display = 'flex';
+                return;
+            }
+            
+            // Initialiser le pool de questions pour le niveau choisi
+            initializeQuestionPool(difficulty);
+            console.log(`✅ Pool initialisé pour ${difficulty}`);
+            
+            // Créer les effets du chaudron
+            createCauldronEffects();
+            console.log(`✅ Effets du chaudron créés`);
+            
+            // Charger la première question
+            loadNextQuestion();
+            console.log(`✅ Première question chargée`);
+            
+            // Masquer l'écran de chargement et afficher le jeu
+            loadingScreen.classList.add('hidden');
+            const gameContainer = document.getElementById('gameContainer');
+            gameContainer.classList.remove('hidden');
+            
+            // Initialiser l'affichage du chaudron
+            updateCauldronLevel();
+            
+            console.log(`✅ Interface de jeu affichée`);
+            
+            showNotification(`🎯 Mode ${GAME_CONFIG.difficultyLevels[difficulty].name} activé !`, 'success');
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function getQuestionsForDifficulty(difficulty) {
+            return gameData.questions.filter(q => q.difficulty === difficulty);
+        }
+
+        function initializeQuestionPool(difficulty) {
+            const questionsForLevel = getQuestionsForDifficulty(difficulty);
+            
+            if (questionsForLevel.length === 0) {
+                console.warn(`Aucune question trouvée pour le niveau ${difficulty}`);
+                return [];
+            }
+            
+            gameData.questionPools[difficulty] = shuffleArray([...questionsForLevel]);
+            gameData.questionsSeenInLevel.clear();
+            gameData.questionIndex = 0;
+            gameData.lastShuffleTimestamp = Date.now();
+            
+            console.log(`Pool initialisé pour ${difficulty}: ${gameData.questionPools[difficulty].length} questions`);
+            return gameData.questionPools[difficulty];
+        }
+
+        function getNextIntelligentQuestion(difficulty) {
+            if (!gameData.questionPools[difficulty] || gameData.questionPools[difficulty].length === 0) {
+                initializeQuestionPool(difficulty);
+            }
+            
+            const pool = gameData.questionPools[difficulty];
+            if (pool.length === 0) {
+                console.error(`Aucune question disponible pour ${difficulty}`);
+                return null;
+            }
+            
+            if (gameData.questionsSeenInLevel.size >= pool.length) {
+                console.log(`Toutes les questions vues pour ${difficulty}, remélange...`);
+                gameData.questionPools[difficulty] = shuffleArray([...pool]);
+                gameData.questionsSeenInLevel.clear();
+                gameData.questionIndex = 0;
+            }
+            
+            let selectedQuestion = null;
+            let attempts = 0;
+            const maxAttempts = Math.min(pool.length, 20);
+            
+            while (attempts < maxAttempts && !selectedQuestion) {
+                const candidateIndex = gameData.questionIndex % pool.length;
+                const candidate = pool[candidateIndex];
+                
+                const isInRecentHistory = gameData.questionHistory.some(historyQ => 
+                    historyQ.question === candidate.question && 
+                    historyQ.difficulty === candidate.difficulty
+                );
+                
+                if (!isInRecentHistory) {
+                    selectedQuestion = candidate;
+                } else {
+                    gameData.questionIndex = (gameData.questionIndex + 1) % pool.length;
+                    attempts++;
+                }
+            }
+            
+            if (!selectedQuestion) {
+                selectedQuestion = pool[gameData.questionIndex % pool.length];
+                console.log('Prise de question récente par défaut');
+            }
+            
+            gameData.questionsSeenInLevel.add(selectedQuestion.question);
+            gameData.questionIndex = (gameData.questionIndex + 1) % pool.length;
+            
+            gameData.questionHistory.push({
+                question: selectedQuestion.question,
+                difficulty: selectedQuestion.difficulty,
+                timestamp: Date.now()
+            });
+            
+            if (gameData.questionHistory.length > 10) {
+                gameData.questionHistory.shift();
+            }
+            
+            return selectedQuestion;
+        }
+
+        function loadNextQuestion() {
+            console.log(`🔄 Chargement de la prochaine question pour ${gameData.currentDifficulty}`);
+            
+            const selectedQuestion = getNextIntelligentQuestion(gameData.currentDifficulty);
+            
+            if (!selectedQuestion) {
+                console.error('❌ Aucune question sélectionnée');
+                showNotification('❌ Aucune question disponible pour ce niveau', 'error');
+                return;
+            }
+            
+            console.log(`✅ Question sélectionnée:`, selectedQuestion.question);
+            
+            gameData.currentQuestion = selectedQuestion;
+            gameData.isAnswering = false;
+            
+            // Masquer le panneau d'explication s'il est affiché
+            hideExplanation();
+            
+            displayQuestion();
+            startTimer();
+            
+            console.log(`Question ${gameData.questionsSeenInLevel.size}/${gameData.questionPools[gameData.currentDifficulty]?.length || 0} pour ${gameData.currentDifficulty}`);
+        }
+
+        function displayQuestion() {
+            const questionElement = document.getElementById('questionText');
+            const answersContainer = document.getElementById('answersContainer');
+            const questionNumber = document.getElementById('questionNumber');
+            const difficultyBadge = document.getElementById('difficultyBadge');
+            
+            const currentPool = gameData.questionPools[gameData.currentDifficulty];
+            const totalInLevel = currentPool ? currentPool.length : 0;
+            const seenInLevel = gameData.questionsSeenInLevel.size;
+            
+            questionNumber.textContent = `Question ${seenInLevel}/${totalInLevel}`;
+            difficultyBadge.textContent = GAME_CONFIG.difficultyLevels[gameData.currentDifficulty].name;
+            difficultyBadge.className = `difficulty-badge ${gameData.currentDifficulty}`;
+            
+            questionElement.style.opacity = '0';
+            setTimeout(() => {
+                questionElement.textContent = gameData.currentQuestion.question;
+                questionElement.style.opacity = '1';
+            }, 200);
+            
+            answersContainer.innerHTML = '';
+            
+            const shuffledAnswers = shuffleArray([...gameData.currentQuestion.answers]);
+            
+            shuffledAnswers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = `${index + 1}. ${answer.text}`;
+                button.style.animationDelay = `${index * 0.1}s`;
+                button.style.animation = 'slideUp 0.4s ease forwards';
+                button.onclick = () => selectAnswer(answer, button);
+                answersContainer.appendChild(button);
+            });
+        }
+
+        function startTimer() {
+            gameData.timeLeft = GAME_CONFIG.questionTime;
+            gameData.questionStartTime = Date.now();
+            
+            clearInterval(gameData.timerInterval);
+            
+            updateTimerDisplay();
+            
+            gameData.timerInterval = setInterval(() => {
+                gameData.timeLeft--;
+                updateTimerDisplay();
+                
+                if (gameData.timeLeft <= 0) {
+                    clearInterval(gameData.timerInterval);
+                    if (!gameData.isAnswering) {
+                        handleTimeout();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timerText = document.getElementById('timerText');
+            const timerProgress = document.getElementById('timerProgress');
+            const timerCircle = document.getElementById('timerCircle');
+            const timerValue = document.getElementById('timerValue');
+            
+            timerText.textContent = gameData.timeLeft;
+            timerValue.textContent = gameData.timeLeft;
+            
+            const percentage = (gameData.timeLeft / GAME_CONFIG.questionTime) * 360;
+            timerProgress.style.background = `conic-gradient(from 0deg, var(--success-gradient) ${percentage}deg, transparent ${percentage}deg)`;
+            
+            timerCircle.classList.remove('timer-warning', 'timer-critical');
+            if (gameData.timeLeft <= 5) {
+                timerCircle.classList.add('timer-critical');
+            } else if (gameData.timeLeft <= 8) {
+                timerCircle.classList.add('timer-warning');
+            }
+        }
+
+        function selectAnswer(selectedAnswer, buttonElement) {
+            if (gameData.isAnswering) return;
+            
+            gameData.isAnswering = true;
+            clearInterval(gameData.timerInterval);
+            
+            const allButtons = document.querySelectorAll('.answer-btn');
+            allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+            
+            const timeUsed = GAME_CONFIG.questionTime - gameData.timeLeft;
+            
+            if (selectedAnswer.correct) {
+                buttonElement.classList.add('correct');
+                handleCorrectAnswer(timeUsed);
+                setTimeout(() => showExplanation(true), 500);
+            } else {
+                buttonElement.classList.add('incorrect');
+                allButtons.forEach(btn => {
+                    const answerText = btn.textContent.substring(3);
+                    const correctAnswer = gameData.currentQuestion.answers.find(a => a.correct);
+                    if (answerText === correctAnswer.text) {
+                        btn.classList.add('correct');
+                    }
+                });
+                handleIncorrectAnswer();
+                setTimeout(() => showExplanation(false), 500);
+            }
+            
+            setTimeout(() => {
+                hideExplanation();
+                allButtons.forEach(btn => btn.style.pointerEvents = 'auto');
+                loadNextQuestion();
+            }, 4500);
+        }
+
+        function handleTimeout() {
+            gameData.isAnswering = true;
+            gameData.streak = 0;
+            gameData.progress = 0; // Vider complètement le chaudron en cas de timeout
+            gameData.correctAnswersInLevel = 0;
+            
+            const cauldron = document.getElementById('cauldron');
+            cauldron.classList.add('reaction-timeout');
+            setTimeout(() => cauldron.classList.remove('reaction-timeout'), 1000);
+            
+            const allButtons = document.querySelectorAll('.answer-btn');
+            allButtons.forEach(btn => {
+                btn.style.pointerEvents = 'none';
+                const answerText = btn.textContent.substring(3);
+                const correctAnswer = gameData.currentQuestion.answers.find(a => a.correct);
+                if (answerText === correctAnswer.text) {
+                    btn.classList.add('correct');
+                }
+            });
+            
+            setTimeout(() => showExplanation(false), 500);
+            
+            updateUI();
+            
+            setTimeout(() => {
+                hideExplanation();
+                allButtons.forEach(btn => btn.style.pointerEvents = 'auto');
+                loadNextQuestion();
+            }, 4500);
+        }
+
+        function handleCorrectAnswer(timeUsed) {
+            const difficultyConfig = GAME_CONFIG.difficultyLevels[gameData.currentDifficulty];
+            let baseScore = difficultyConfig.baseScore;
+            let hasSpeedBonus = false;
+            
+            if (timeUsed <= GAME_CONFIG.speedBonusThreshold) {
+                baseScore = Math.floor(baseScore * GAME_CONFIG.speedBonusMultiplier);
+                hasSpeedBonus = true;
+                
+                // Créer l'effet d'éclair pour le bonus de vitesse
+                createSpeedBonusEffect();
+            }
+            
+            gameData.score += baseScore;
+            gameData.streak++;
+            gameData.progress += 20;
+            gameData.correctAnswersInLevel++;
+            
+            checkLevelUp();
+            addIngredient(timeUsed);
+            
+            const cauldron = document.getElementById('cauldron');
+            cauldron.classList.add('reaction-good');
+            setTimeout(() => cauldron.classList.remove('reaction-good'), 1000);
+            
+            createExplosion(160, 300, '#4facfe');
+            checkForPotion();
+            updateUI();
+            
+            // Notification avec indication du bonus
+            if (hasSpeedBonus) {
+                showNotification(`⚡ Réponse éclair ! +${baseScore} points (bonus x${GAME_CONFIG.speedBonusMultiplier})`, 'success');
+            }
+        }
+
+        function createSpeedBonusEffect() {
+            const gameContainer = document.querySelector('.cauldron-area');
+            const speedEffect = document.createElement('div');
+            speedEffect.className = 'speed-bonus-effect';
+            speedEffect.textContent = '⚡';
+            
+            gameContainer.appendChild(speedEffect);
+            
+            // Supprimer l'effet après l'animation
+            setTimeout(() => {
+                if (speedEffect.parentNode) {
+                    speedEffect.remove();
+                }
+            }, 1500);
+        }
+
+        function handleIncorrectAnswer() {
+            gameData.streak = 0;
+            gameData.progress = 0; // Vider complètement le chaudron en cas d'erreur
+            gameData.correctAnswersInLevel = Math.max(0, gameData.correctAnswersInLevel - 1);
+            
+            const cauldron = document.getElementById('cauldron');
+            cauldron.classList.add('reaction-bad');
+            setTimeout(() => cauldron.classList.remove('reaction-bad'), 1000);
+            
+            createExplosion(160, 300, '#f5576c');
+            updateUI();
+        }
+
+        function checkLevelUp() {
+            const currentConfig = GAME_CONFIG.difficultyLevels[gameData.currentDifficulty];
+            
+            if (gameData.correctAnswersInLevel >= currentConfig.levelUpThreshold) {
+                const difficulties = ['easy', 'medium', 'hard', 'expert'];
+                const currentIndex = difficulties.indexOf(gameData.currentDifficulty);
+                
+                if (currentIndex < difficulties.length - 1) {
+                    const newDifficulty = difficulties[currentIndex + 1];
+                    
+                    if (gameData.availableDifficulties.includes(newDifficulty)) {
+                        gameData.currentDifficulty = newDifficulty;
+                        gameData.level++;
+                        gameData.correctAnswersInLevel = 0;
+                        
+                        initializeQuestionPool(newDifficulty);
+                        showLevelUpNotification(newDifficulty);
+                    }
+                }
+            }
+        }
+
+        function showLevelUpNotification(newDifficulty) {
+            const config = GAME_CONFIG.difficultyLevels[newDifficulty];
+            
+            const notification = document.createElement('div');
+            notification.className = 'level-up-notification';
+            notification.innerHTML = `
+                <div class="level-up-title">${config.icon} Niveau Supérieur !</div>
+                <div class="level-up-description">
+                    Vous êtes maintenant un <strong>${config.name}</strong> !<br>
+                    Préparez-vous à des défis plus complexes.
+                </div>
+                <button class="level-up-btn" onclick="this.parentElement.remove()">
+                    Continuer l'Aventure
+                </button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+            
+            showNotification(`🎉 Niveau ${gameData.level} atteint : ${config.name} !`, 'success');
+        }
+
+        function addIngredient(timeUsed) {
+            let ingredientType = 'common';
+            let ingredientIcon = '🌿';
+            let effectType = null;
+            
+            if (gameData.streak >= 5 && timeUsed <= 5) {
+                ingredientType = 'legendary';
+                ingredientIcon = '⭐';
+                effectType = 'legendary';
+            } else if (gameData.streak >= 3 || timeUsed <= GAME_CONFIG.speedBonusThreshold || gameData.currentDifficulty === 'hard' || gameData.currentDifficulty === 'expert') {
+                ingredientType = 'rare';
+                ingredientIcon = '💎';
+                effectType = 'rare';
+            }
+            
+            gameData.ingredients.push({
+                type: ingredientType,
+                icon: ingredientIcon,
+                timestamp: Date.now()
+            });
+            
+            // Créer l'effet visuel si c'est un ingrédient spécial
+            if (effectType) {
+                createIngredientEffect(effectType, ingredientIcon);
+            }
+            
+            updateIngredientsDisplay();
+        }
+
+        function createIngredientEffect(type, icon) {
+            const gameContainer = document.querySelector('.cauldron-area');
+            const ingredientEffect = document.createElement('div');
+            
+            if (type === 'rare') {
+                ingredientEffect.className = 'rare-ingredient-effect';
+                ingredientEffect.textContent = '💎';
+                showNotification('💎 Ingrédient rare obtenu !', 'success');
+            } else if (type === 'legendary') {
+                ingredientEffect.className = 'legendary-ingredient-effect';
+                ingredientEffect.textContent = '⭐';
+                showNotification('⭐ Ingrédient légendaire obtenu !', 'success');
+            }
+            
+            gameContainer.appendChild(ingredientEffect);
+            
+            // Supprimer l'effet après l'animation
+            const duration = type === 'legendary' ? 2500 : 2000;
+            setTimeout(() => {
+                if (ingredientEffect.parentNode) {
+                    ingredientEffect.remove();
+                }
+            }, duration);
+        }
+
+        function updateIngredientsDisplay() {
+            const grid = document.getElementById('ingredientsGrid');
+            grid.innerHTML = '';
+            
+            gameData.ingredients.slice(-9).forEach((ingredient, index) => {
+                const ingredientEl = document.createElement('div');
+                ingredientEl.className = `ingredient ${ingredient.type}`;
+                ingredientEl.textContent = ingredient.icon;
+                ingredientEl.style.animationDelay = `${index * 0.1}s`;
+                ingredientEl.style.animation = 'slideUp 0.5s ease forwards';
+                grid.appendChild(ingredientEl);
+            });
+        }
+
+        function checkForPotion() {
+            if (gameData.progress >= GAME_CONFIG.progressTarget) {
+                createPotion();
+                gameData.progress = 0;
+                gameData.potions++;
+            }
+        }
+
+        function createPotion() {
+            const cauldron = document.getElementById('cauldron');
+            const liquid = document.getElementById('cauldronLiquid');
+            
+            const potionColor = GAME_CONFIG.potionColors[gameData.currentPotionIndex % GAME_CONFIG.potionColors.length];
+            
+            // Animation de création de potion
+            liquid.style.background = potionColor.gradient;
+            liquid.style.boxShadow = `0 0 60px ${potionColor.glow}`;
+            
+            createExplosion(160, 200, potionColor.glow.match(/rgba?\(([^)]+)\)/)[1].split(',').slice(0,3).join(','), 20);
+            
+            const levelMultiplier = gameData.level;
+            gameData.score += GAME_CONFIG.potionBonus * levelMultiplier;
+            
+            // Incrémenter l'index de potion pour la prochaine
+            gameData.currentPotionIndex++;
+            gameData.progress = 0; // Remettre à zéro après la création
+            gameData.potions++;
+            
+            setTimeout(() => {
+                // Revenir à la couleur de la nouvelle potion en cours
+                updateCauldronLevel();
+            }, 3000);
+            
+            showNotification(`${potionColor.name} créée ! +${GAME_CONFIG.potionBonus * levelMultiplier} points`, 'success');
+        }
+
+        function createExplosion(x, y, color, particleCount = 12) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            document.querySelector('.cauldron-area').appendChild(explosion);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'explosion-particle';
+                
+                if (typeof color === 'string' && color.includes(',')) {
+                    particle.style.background = `rgb(${color})`;
+                } else {
+                    particle.style.background = color || '#4facfe';
+                }
+                
+                particle.style.left = '0px';
+                particle.style.top = '0px';
+                
+                explosion.appendChild(particle);
+            }
+            
+            setTimeout(() => explosion.remove(), 1200);
+        }
+
+        function updateUI() {
+            document.getElementById('scoreValue').textContent = gameData.score.toLocaleString();
+            document.getElementById('streakValue').textContent = gameData.streak;
+            document.getElementById('potionsValue').textContent = gameData.potions;
+            document.getElementById('levelValue').textContent = gameData.level;
+            
+            // Mettre à jour le niveau du liquide dans le chaudron selon la progression
+            updateCauldronLevel();
+        }
+
+        function updateCauldronLevel() {
+            const liquid = document.getElementById('cauldronLiquid');
+            const progressPercentage = Math.min(gameData.progress, GAME_CONFIG.progressTarget);
+            const liquidHeight = (progressPercentage / GAME_CONFIG.progressTarget) * 70; // Max 70% du chaudron
+            
+            liquid.style.height = liquidHeight + '%';
+            
+            // Utiliser la couleur de la potion actuelle
+            const currentPotion = GAME_CONFIG.potionColors[gameData.currentPotionIndex % GAME_CONFIG.potionColors.length];
+            liquid.style.background = currentPotion.gradient;
+            liquid.style.boxShadow = `0 0 ${20 + (progressPercentage / 100) * 40}px ${currentPotion.glow}`;
+            
+            console.log(`Chaudron mis à jour: ${liquidHeight}% - Progression: ${progressPercentage}/${GAME_CONFIG.progressTarget}`);
+        }
+
+        function createCauldronEffects() {
+            console.log(`🧪 Création des effets du chaudron`);
+            
+            const liquid = document.getElementById('cauldronLiquid');
+            if (!liquid) {
+                console.error('❌ Élément cauldronLiquid non trouvé');
+                return;
+            }
+            
+            const steam = document.getElementById('steam') || createSteam();
+            
+            // Vérifier qu'on n'a pas déjà des intervalles en cours
+            if (window.bubblesInterval) {
+                clearInterval(window.bubblesInterval);
+            }
+            if (window.steamInterval) {
+                clearInterval(window.steamInterval);
+            }
+            
+            // Créer des bulles d'alchimie avec plus de variété
+            window.bubblesInterval = setInterval(() => {
+                const liquidElement = document.getElementById('cauldronLiquid');
+                if (liquidElement) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    
+                    // Position aléatoire dans le chaudron
+                    bubble.style.left = Math.random() * 70 + 15 + '%';
+                    
+                    // Tailles variées de bulles
+                    const size = Math.random() * 15 + 8;
+                    bubble.style.width = size + 'px';
+                    bubble.style.height = size + 'px';
+                    
+                    // Vitesse d'animation variable
+                    bubble.style.animationDuration = Math.random() * 2 + 3 + 's';
+                    bubble.style.animationDelay = Math.random() * 0.5 + 's';
+                    
+                    liquidElement.appendChild(bubble);
+                    
+                    // Supprimer la bulle après l'animation
+                    setTimeout(() => {
+                        if (bubble.parentNode) bubble.remove();
+                    }, 5000);
+                }
+            }, 300);
+            
+            // Créer des particules de vapeur magique
+            window.steamInterval = setInterval(() => {
+                const steamElement = document.getElementById('steam');
+                if (steamElement) {
+                    const steamParticle = document.createElement('div');
+                    steamParticle.className = 'steam-particle';
+                    
+                    // Position aléatoire pour la vapeur
+                    steamParticle.style.left = Math.random() * 100 + '%';
+                    steamParticle.style.bottom = '0px';
+                    
+                    // Variables CSS pour mouvement aléatoire
+                    steamParticle.style.setProperty('--random-x', (Math.random() - 0.5) * 80 + 'px');
+                    steamParticle.style.animationDuration = Math.random() * 2 + 4 + 's';
+                    steamParticle.style.animationDelay = Math.random() * 1 + 's';
+                    
+                    steamElement.appendChild(steamParticle);
+                    
+                    // Supprimer la particule après l'animation
+                    setTimeout(() => {
+                        if (steamParticle.parentNode) steamParticle.remove();
+                    }, 6000);
+                }
+            }, 200);
+            
+            console.log(`✅ Effets du chaudron créés avec succès`);
+        }
+
+        function createSteam() {
+            const steam = document.createElement('div');
+            steam.id = 'steam';
+            steam.className = 'steam';
+            document.querySelector('.cauldron-container').appendChild(steam);
+            return steam;
+        }
+
+        function showExplanation(isCorrect) {
+            console.log(`📚 Affichage de l'explication (${isCorrect ? 'correct' : 'incorrect'})`);
+            
+            const panel = document.getElementById('explanationPanel');
+            const icon = document.getElementById('explanationIcon');
+            const title = document.getElementById('explanationTitle');
+            const content = document.getElementById('explanationContent');
+            const progress = document.getElementById('explanationProgress');
+            
+            if (!gameData.currentQuestion || !gameData.currentQuestion.explanation) {
+                console.log('❌ Pas d\'explication disponible');
+                return;
+            }
+            
+            if (isCorrect) {
+                icon.textContent = '✅';
+                icon.className = 'explanation-icon correct';
+                title.textContent = 'Bonne réponse !';
+            } else {
+                icon.textContent = '📚';
+                icon.className = 'explanation-icon incorrect';
+                title.textContent = 'Explication';
+            }
+            
+            content.textContent = gameData.currentQuestion.explanation;
+            
+            // Réinitialiser l'animation de la barre de progression
+            progress.style.animation = 'none';
+            progress.offsetHeight; // Force reflow
+            progress.style.animation = 'explanation-timer 4s linear';
+            
+            // Afficher le panneau
+            panel.classList.add('show');
+            
+            // Masquer automatiquement après 4 secondes (sans rappel automatique)
+            setTimeout(() => {
+                if (panel.classList.contains('show')) {
+                    hideExplanation();
+                }
+            }, 4000);
+        }
+
+        function hideExplanation() {
+            console.log(`❌ Masquage de l'explication`);
+            const panel = document.getElementById('explanationPanel');
+            panel.classList.remove('show');
+        }
+
+        function changeDifficulty() {
+            document.getElementById('gameContainer').classList.add('hidden');
+            document.getElementById('difficultySelection').style.display = 'flex';
+            
+            clearInterval(gameData.timerInterval);
+            gameData.questionPools = {};
+            gameData.questionHistory = [];
+            gameData.questionsSeenInLevel.clear();
+            gameData.questionIndex = 0;
+            gameData.correctAnswersInLevel = 0;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                background: var(--glass-bg);
+                backdrop-filter: var(--backdrop-blur);
+                border: 1px solid var(--glass-border);
+                color: var(--text-primary);
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: var(--shadow-soft);
+                z-index: 1001;
+                font-weight: 500;
+                animation: slideIn 0.3s ease;
+                max-width: 300px;
+            `;
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (gameData.isAnswering) return;
+            
+            const buttons = document.querySelectorAll('.answer-btn:not(.correct):not(.incorrect)');
+            
+            if (event.key >= '1' && event.key <= '4') {
+                const index = parseInt(event.key) - 1;
+                if (buttons[index]) {
+                    buttons[index].click();
+                }
+            }
+        });
+
+        const notificationStyles = document.createElement('style');
+        notificationStyles.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(notificationStyles);
+
+        window.addEventListener('load', function() {
+            console.log("🎮 Page chargée, démarrage du jeu...");
+            
+            setTimeout(() => {
+                initGame();
+            }, 100);
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Alchimiste Moderne - 2025</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.37);
+            --shadow-heavy: 0 15px 35px rgba(31, 38, 135, 0.5);
+            --backdrop-blur: blur(40px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #667eea 50%, #764ba2 75%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .cyber-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-orbs {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
+            backdrop-filter: var(--backdrop-blur);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); opacity: 0.3; }
+            33% { transform: translateY(-30px) rotate(120deg) scale(1.1); opacity: 0.6; }
+            66% { transform: translateY(-15px) rotate(240deg) scale(0.9); opacity: 0.4; }
+        }
+
+        .difficulty-selection {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .difficulty-title {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700, #ff8c42, #f5576c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .difficulty-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            width: 100%;
+            padding: 0 2rem;
+        }
+
+        .difficulty-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .difficulty-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .difficulty-card.easy { border-color: rgba(76, 172, 254, 0.5); }
+        .difficulty-card.medium { border-color: rgba(255, 215, 0, 0.5); }
+        .difficulty-card.hard { border-color: rgba(245, 87, 108, 0.5); }
+        .difficulty-card.expert { border-color: rgba(138, 43, 226, 0.5); }
+
+        .difficulty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .difficulty-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .difficulty-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-stats {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .difficulty-stat {
+            text-align: center;
+        }
+
+        .difficulty-stat-value {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            grid-template-rows: 100px 1fr 120px;
+            height: 100vh;
+            gap: 24px;
+            padding: 24px;
+            position: relative;
+            z-index: 3;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 0 32px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700, #ff8c42, #ff6b9d);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .title::after {
+            content: '⚗️';
+            margin-left: 12px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.7));
+            animation: glow-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.5)); }
+            50% { filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1)); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            align-items: center;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-width: 80px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1;
+        }
+
+        .stat-card.score .stat-value { color: #4facfe; }
+        .stat-card.streak .stat-value { color: #f5576c; }
+        .stat-card.potions .stat-value { color: #ffd700; }
+        .stat-card.timer .stat-value { color: #00f2fe; }
+        .stat-card.level .stat-value { color: #ff6b9d; }
+
+        .ingredients-panel {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        .panel-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .ingredient {
+            aspect-ratio: 1;
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ingredient::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            border-radius: 20px;
+            animation: rotate 3s linear infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ingredient:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ingredient.common { border-color: rgba(76, 172, 254, 0.5); }
+        .ingredient.rare { border-color: rgba(255, 215, 0, 0.5); }
+        .ingredient.legendary { border-color: rgba(240, 147, 251, 0.5); }
+
+        .cauldron-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .cauldron-container {
+            position: relative;
+            margin-bottom: 32px;
+        }
+
+        .cauldron {
+            width: 280px;
+            height: 200px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 50%, #0d0d0d 100%);
+            border: 6px solid #8b4513;
+            border-radius: 15px 15px 140px 140px;
+            position: relative;
+            box-shadow: 
+                0 0 30px rgba(139, 69, 19, 0.4),
+                inset 0 -20px 40px rgba(0, 0, 0, 0.6),
+                inset 0 10px 20px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .cauldron::before,
+        .cauldron::after {
+            content: '';
+            position: absolute;
+            top: 30px;
+            width: 20px;
+            height: 40px;
+            background: transparent;
+            border: 4px solid #8b4513;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(139, 69, 19, 0.6);
+        }
+
+        .cauldron::before {
+            left: -15px;
+            border-right: none;
+        }
+
+        .cauldron::after {
+            right: -15px;
+            border-left: none;
+        }
+
+        .cauldron-liquid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0%; /* Commence vide */
+            background: linear-gradient(135deg, #4b0082 0%, #8a2be2 50%, #9370db 100%);
+            border-radius: 0 0 130px 130px;
+            transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 
+                inset 0 10px 20px rgba(255, 255, 255, 0.2),
+                inset 0 -10px 20px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(138, 43, 226, 0.5);
+            animation: liquid-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes liquid-glow {
+            0%, 100% { 
+                box-shadow: 
+                    inset 0 10px 20px rgba(255, 255, 255, 0.2),
+                    inset 0 -10px 20px rgba(0, 0, 0, 0.3),
+                    0 0 20px rgba(138, 43, 226, 0.5);
+            }
+            50% { 
+                box-shadow: 
+                    inset 0 10px 20px rgba(255, 255, 255, 0.3),
+                    inset 0 -10px 20px rgba(0, 0, 0, 0.2),
+                    0 0 40px rgba(138, 43, 226, 0.8);
+            }
+        }
+
+        .liquid-surface {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.4) 0%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                rgba(255, 255, 255, 0.4) 100%);
+            border-radius: 100px;
+            animation: liquid-wave 2s ease-in-out infinite;
+        }
+
+        @keyframes liquid-wave {
+            0%, 100% { 
+                transform: translateX(-5px) scaleX(1);
+                opacity: 0.6;
+            }
+            50% { 
+                transform: translateX(5px) scaleX(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(138, 43, 226, 0.3) 100%);
+            animation: bubble-rise 4s infinite ease-out;
+            box-shadow: 
+                inset 2px 2px 4px rgba(255, 255, 255, 0.6),
+                0 0 8px rgba(138, 43, 226, 0.4);
+        }
+
+        @keyframes bubble-rise {
+            0% {
+                transform: translateY(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.8;
+                transform: scale(0.3) rotate(45deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-60px) scale(1) rotate(180deg);
+            }
+            100% {
+                transform: translateY(-140px) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .steam {
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 80px;
+            pointer-events: none;
+        }
+
+        .steam-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6), rgba(138, 43, 226, 0.2));
+            border-radius: 50%;
+            animation: steam-rise 5s infinite ease-out;
+            filter: blur(1px);
+        }
+
+        @keyframes steam-rise {
+            0% {
+                transform: translateY(0) translateX(0) scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.8;
+                transform: scale(0.5) rotate(90deg);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-40px) translateX(var(--random-x, 10px)) scale(1) rotate(180deg);
+            }
+            100% {
+                transform: translateY(-100px) translateX(var(--random-x, 20px)) scale(1.5) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .timer-ring {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+        }
+
+        .timer-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .timer-progress {
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--success-gradient) 0deg, transparent 0deg);
+            transition: background 0.1s ease;
+        }
+
+        .timer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .question-panel {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .question-number {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .difficulty-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .difficulty-badge.easy { background: rgba(76, 172, 254, 0.2); color: #4facfe; }
+        .difficulty-badge.medium { background: rgba(255, 215, 0, 0.2); color: #ffd700; }
+        .difficulty-badge.hard { background: rgba(245, 87, 108, 0.2); color: #f5576c; }
+        .difficulty-badge.expert { background: rgba(138, 43, 226, 0.2); color: #8a2be2; }
+
+        .question {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 32px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex: 1;
+        }
+
+        .answer-btn {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 20px 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .answer-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .answer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .answer-btn:hover::before {
+            left: 100%;
+        }
+
+        .answer-btn:active {
+            transform: translateY(0);
+        }
+
+        .answer-btn.correct {
+            background: rgba(76, 172, 254, 0.2);
+            border-color: #4facfe;
+            animation: correct-pulse 0.6s ease-out;
+        }
+
+        .answer-btn.incorrect {
+            background: rgba(245, 87, 108, 0.2);
+            border-color: #f5576c;
+            animation: incorrect-shake 0.6s ease-out;
+        }
+
+        @keyframes correct-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 172, 254, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 20px rgba(76, 172, 254, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(76, 172, 254, 0); }
+        }
+
+        @keyframes incorrect-shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+
+        .progress-panel {
+            grid-column: 1 / -1;
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-percentage {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe, #4facfe);
+            background-size: 200% 100%;
+            border-radius: 12px;
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            animation: progress-flow 2s ease-in-out infinite;
+        }
+
+        @keyframes progress-flow {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Z-index fixé pour le panneau d'explication */
+        .explanation-panel {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow-heavy);
+            z-index: 9999; /* Z-index le plus élevé pour garantir l'affichage au premier plan */
+            max-width: 600px;
+            width: 90%;
+            opacity: 0;
+            transform: translateX(-50%) translateY(100px);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        .explanation-panel.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        .explanation-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .explanation-icon {
+            font-size: 1.5rem;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .explanation-icon.correct {
+            color: #4facfe;
+        }
+
+        .explanation-icon.incorrect {
+            color: #f5576c;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px currentColor); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 15px currentColor); }
+        }
+
+        .explanation-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .explanation-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .explanation-dismiss {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .explanation-dismiss:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .explanation-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            border-radius: 0 0 16px 16px;
+            width: 100%;
+            transform-origin: left;
+            animation: explanation-timer 4s linear;
+        }
+
+        @keyframes explanation-timer {
+            from { transform: scaleX(1); }
+            to { transform: scaleX(0); }
+        }
+
+        .explosion {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .explosion-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.5) rotate(360deg) translate(60px);
+                opacity: 0;
+            }
+        }
+
+        .cauldron.reaction-good .cauldron-liquid {
+            background: var(--success-gradient);
+            animation: good-reaction 1s ease-out;
+        }
+
+        .cauldron.reaction-bad .cauldron-liquid {
+            background: var(--danger-gradient);
+            animation: bad-reaction 1s ease-out;
+        }
+
+        .cauldron.reaction-timeout .cauldron-liquid {
+            background: linear-gradient(135deg, #666, #999);
+            animation: timeout-reaction 1s ease-out;
+        }
+
+        @keyframes good-reaction {
+            0% { transform: scale(1); box-shadow: var(--shadow-heavy); }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 60px rgba(76, 172, 254, 0.8);
+            }
+            100% { transform: scale(1); box-shadow: var(--shadow-heavy); }
+        }
+
+        @keyframes bad-reaction {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.02) rotate(1deg); }
+            75% { transform: scale(1.02) rotate(-1deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes timeout-reaction {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(0.5); }
+            100% { filter: brightness(1); }
+        }
+
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .loading-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700, #ff8c42, #f5576c);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 32px;
+            animation: title-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes title-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.8)); }
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin-bottom: 24px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 48px;
+        }
+
+        .loading-instructions {
+            max-width: 600px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .loading-instructions strong {
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+        }
+
+        .action-btn {
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .timer-warning .timer-progress {
+            background: conic-gradient(from 0deg, var(--danger-gradient) 0deg, transparent 0deg);
+            animation: timer-pulse 0.5s ease-in-out infinite;
+        }
+
+        .timer-critical .timer-progress {
+            background: conic-gradient(from 0deg, #ff0000 0deg, transparent 0deg);
+            animation: timer-critical 0.2s ease-in-out infinite;
+        }
+
+        @keyframes timer-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes timer-critical {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .level-up-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass-bg);
+            backdrop-filter: var(--backdrop-blur);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            z-index: 9998; /* Un niveau en dessous de explanation-panel */
+            animation: levelUpAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: var(--shadow-heavy);
+        }
+
+        @keyframes levelUpAppear {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .level-up-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700, #ff8c42);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .level-up-description {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .level-up-btn {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .level-up-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.6s ease forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 280px 1fr 320px;
+                gap: 16px;
+                padding: 16px;
+            }
+            
+            .cauldron {
+                width: 240px;
+                height: 180px;
+            }
+        }
