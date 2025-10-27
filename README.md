@@ -30,6 +30,11 @@
 - `showNotification()` affiche des messages temporisés en overlay pour chaque événement notable (bonus, erreurs, montée de niveau). 【F:quiz_alchemiste.html†L1224-L1250】
 - Le listener clavier autorise les réponses rapides avec les touches `1` à `4`. 【F:quiz_alchemiste.html†L1252-L1263】
 
+## Backoffice de gestion des cartes
+- `backoffice.html` fournit un tableau de bord autonome pour charger `cards.json`, importer un fichier JSON et télécharger l'export généré. 【F:backoffice.html†L386-L439】【F:backoffice.html†L441-L515】
+- Le panneau d'édition permet d'ajouter ou supprimer catégories, questions et réponses tout en conservant les statistiques et les validations (au moins deux réponses, sélection du bon choix). 【F:backoffice.html†L661-L867】
+- Un état vide guide l'utilisateur tant qu'aucune catégorie n'a été créée. 【F:backoffice.html†L661-L668】
+
 ## Version
- Le pied de page `footer.app-footer` affiche désormais la version `v1.0.2` de l'application. Mettez à jour ce numéro à chaque évolution fonctionnelle et synchronisez la mention dans cette section. 【F:quiz_alchemiste.html†L1178-L1181】
+ Le pied de page `footer.app-footer` affiche désormais la version `v1.0.3` de l'application. Mettez à jour ce numéro à chaque évolution fonctionnelle et synchronisez la mention dans cette section. 【F:quiz_alchemiste.html†L1178-L1181】【F:backoffice.html†L436-L439】
 
