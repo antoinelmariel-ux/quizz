@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backoffice des Cartes - Quiz Alchimiste</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 45%, #312e81 100%);
+            --panel-bg: rgba(15, 23, 42, 0.72);
+            --panel-border: rgba(148, 163, 184, 0.25);
+            --panel-shadow: 0 25px 40px rgba(15, 23, 42, 0.45);
+            --accent: #38bdf8;
+            --accent-strong: #0ea5e9;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            padding: 32px;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .title-block {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+            max-width: 720px;
+            line-height: 1.5;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        button, label.file-input {
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #f8fafc;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border 0.18s ease;
+        }
+
+        button:hover, label.file-input:hover {
+            transform: translateY(-1px);
+            border-color: rgba(56, 189, 248, 0.7);
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.25);
+        }
+
+        button.secondary {
+            background: rgba(226, 232, 240, 0.08);
+            border-color: rgba(148, 163, 184, 0.45);
+            color: var(--text);
+        }
+
+        button.danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.45);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        label.file-input {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        label.file-input input[type="file"] {
+            display: none;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .side-panel, .workspace-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--panel-shadow);
+            backdrop-filter: blur(26px);
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: sticky;
+            top: 32px;
+            height: fit-content;
+            max-height: calc(100vh - 64px);
+            overflow-y: auto;
+        }
+
+        .status-message {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            line-height: 1.5;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(148, 163, 184, 0.12);
+        }
+
+        .status-message.success {
+            border-color: rgba(34, 197, 94, 0.4);
+            background: rgba(34, 197, 94, 0.12);
+            color: #bbf7d0;
+        }
+
+        .status-message.warning {
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(245, 158, 11, 0.12);
+            color: #fcd34d;
+        }
+
+        .status-message.error {
+            border-color: rgba(239, 68, 68, 0.45);
+            background: rgba(239, 68, 68, 0.12);
+            color: #fecaca;
+        }
+
+        .stats {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stats h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .stats ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stats li {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .workspace-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .categories-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .categories-header h2 {
+            margin: 0;
+            font-size: 1.4rem;
+        }
+
+        .category-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            background: rgba(15, 23, 42, 0.55);
+            box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.15);
+        }
+
+        .category-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .category-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .category-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        label.field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        input[type="text"], input[type="color"], textarea, select {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        input[type="text"]:focus, input[type="color"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .questions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        details.question-card {
+            background: rgba(15, 23, 42, 0.65);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            border-radius: var(--radius-md);
+            padding: 0 16px 16px;
+        }
+
+        details.question-card summary {
+            cursor: pointer;
+            padding: 14px 6px;
+            list-style: none;
+            font-weight: 600;
+            color: #bae6fd;
+        }
+
+        details.question-card[open] summary {
+            border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+            margin-bottom: 14px;
+        }
+
+        .question-body {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .answer-row {
+            display: grid;
+            grid-template-columns: 24px 1fr 32px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .answer-row input[type="text"] {
+            width: 100%;
+        }
+
+        .answer-row button {
+            padding: 6px;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.15);
+            font-size: 1rem;
+        }
+
+        .answers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .small-note {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .empty-state {
+            border: 1px dashed rgba(148, 163, 184, 0.35);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            color: var(--muted);
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        footer.app-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid rgba(148, 163, 184, 0.18);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-block">
+            <h1>Backoffice des Cartes</h1>
+            <div class="toolbar">
+                <button id="loadFromServer">Charger les cartes existantes</button>
+                <label class="file-input" for="importFile">
+                    <span>Importer un fichier JSON</span>
+                    <input type="file" id="importFile" accept="application/json,.json">
+                </label>
+                <button id="downloadJson" class="secondary" disabled>Télécharger le JSON généré</button>
+            </div>
+        </div>
+        <p class="subtitle">
+            Gérez les catégories, questions et réponses du Quiz Alchimiste. Modifiez les contenus directement, importez un fichier existant ou exportez le JSON prêt à être utilisé par l'application.
+        </p>
+    </header>
+
+    <main>
+        <aside class="side-panel">
+            <div class="status-message" id="statusMessage">Chargez ou importez un fichier pour commencer.</div>
+            <section class="stats">
+                <h2>Statistiques</h2>
+                <ul id="statsList">
+                    <li><span>Catégories</span><span>0</span></li>
+                    <li><span>Questions</span><span>0</span></li>
+                    <li><span>Facile</span><span>0</span></li>
+                    <li><span>Moyen</span><span>0</span></li>
+                    <li><span>Difficile</span><span>0</span></li>
+                    <li><span>Expert</span><span>0</span></li>
+                </ul>
+            </section>
+            <section>
+                <h2>Conseils rapides</h2>
+                <ul class="small-note">
+                    <li>Assurez-vous qu'au moins une réponse est correcte par question.</li>
+                    <li>Utilisez le bouton d'export pour générer le fichier <code>cards.json</code>.</li>
+                    <li>Servez la page via un serveur local pour autoriser le chargement automatique du fichier.</li>
+                </ul>
+            </section>
+        </aside>
+
+        <section class="workspace-panel">
+            <div class="categories-header">
+                <h2>Catégories et questions</h2>
+                <button id="addCategory">Ajouter une catégorie</button>
+            </div>
+            <div id="categoriesContainer" class="categories-container" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <span>© 2025 Quiz Alchimiste</span>
+        <span class="app-version">Version v1.0.3</span>
+    </footer>
+
+    <script>
+        const difficulties = [
+            { value: 'easy', label: 'Facile' },
+            { value: 'medium', label: 'Moyen' },
+            { value: 'hard', label: 'Difficile' },
+            { value: 'expert', label: 'Expert' }
+        ];
+
+        const state = {
+            categories: []
+        };
+
+        const statusMessage = document.getElementById('statusMessage');
+        const statsList = document.getElementById('statsList');
+        const categoriesContainer = document.getElementById('categoriesContainer');
+        const downloadButton = document.getElementById('downloadJson');
+
+        document.getElementById('loadFromServer').addEventListener('click', async () => {
+            try {
+                const response = await fetch('cards.json?_=' + Date.now());
+                if (!response.ok) {
+                    throw new Error("Impossible de charger cards.json (" + response.status + ")");
+                }
+                const data = await response.json();
+                loadData(data);
+                setStatus('Cartes chargées depuis cards.json.', 'success');
+            } catch (error) {
+                setStatus('Échec du chargement automatique : ' + error.message + '. Utilisez l\'import manuel si besoin.', 'error');
+            }
+        });
+
+        document.getElementById('importFile').addEventListener('change', (event) => {
+            const file = event.target.files?.[0];
+            if (!file) {
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = JSON.parse(e.target?.result ?? '{}');
+                    loadData(content);
+                    setStatus('Fichier importé avec succès : ' + file.name + '.', 'success');
+                } catch (error) {
+                    console.error(error);
+                    setStatus('Le fichier importé n\'est pas un JSON valide.', 'error');
+                }
+            };
+            reader.onerror = () => {
+                setStatus('Impossible de lire le fichier sélectionné.', 'error');
+            };
+            reader.readAsText(file, 'utf-8');
+            event.target.value = '';
+        });
+
+        document.getElementById('downloadJson').addEventListener('click', () => {
+            if (!state.categories.length) {
+                setStatus('Ajoutez au moins une catégorie avant d\'exporter.', 'warning');
+                return;
+            }
+
+            const exportData = {
+                categories: state.categories.map(sanitiseCategoryForExport)
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'cards.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            setStatus('Fichier cards.json généré avec ' + exportData.categories.length + ' catégorie(s).', 'success');
+        });
+
+        document.getElementById('addCategory').addEventListener('click', () => {
+            state.categories.push(createEmptyCategory());
+            renderCategories();
+            setStatus('Nouvelle catégorie créée.', 'success');
+        });
+
+        function loadData(data) {
+            if (!data || !Array.isArray(data.categories)) {
+                throw new Error('Structure de fichier inattendue : aucune liste « categories ».');
+            }
+
+            state.categories = data.categories.map(normaliseCategory);
+            renderCategories();
+        }
+
+        function createEmptyCategory() {
+            return {
+                name: '',
+                icon: '',
+                color: '#4b5563',
+                questions: []
+            };
+        }
+
+        function createEmptyQuestion() {
+            return {
+                difficulty: 'easy',
+                text: '',
+                answers: [
+                    { text: '', correct: true },
+                    { text: '', correct: false },
+                    { text: '', correct: false },
+                    { text: '', correct: false }
+                ],
+                explanation: ''
+            };
+        }
+
+        function normaliseCategory(category) {
+            const normalised = createEmptyCategory();
+            normalised.name = typeof category.name === 'string' ? category.name : '';
+            normalised.icon = typeof category.icon === 'string' ? category.icon : '';
+            normalised.color = typeof category.color === 'string' ? category.color : '#4b5563';
+
+            if (Array.isArray(category.questions)) {
+                normalised.questions = category.questions.map(normaliseQuestion).filter(Boolean);
+            }
+
+            return normalised;
+        }
+
+        function normaliseQuestion(question) {
+            if (!question || typeof question !== 'object') {
+                return createEmptyQuestion();
+            }
+
+            const template = createEmptyQuestion();
+            template.difficulty = difficulties.some((d) => d.value === question.difficulty) ? question.difficulty : 'easy';
+            template.text = typeof question.text === 'string' ? question.text : '';
+            template.explanation = typeof question.explanation === 'string' ? question.explanation : '';
+
+            if (Array.isArray(question.answers) && question.answers.length) {
+                template.answers = question.answers
+                    .map((answer) => ({
+                        text: typeof answer.text === 'string' ? answer.text : '',
+                        correct: Boolean(answer.correct)
+                    }))
+                    .filter((answer) => answer.text.trim().length > 0);
+            }
+
+            if (!template.answers.length) {
+                template.answers = createEmptyQuestion().answers;
+            }
+
+            if (!template.answers.some((answer) => answer.correct)) {
+                template.answers[0].correct = true;
+            }
+
+            return template;
+        }
+
+        function sanitiseCategoryForExport(category) {
+            return {
+                name: category.name.trim(),
+                icon: category.icon.trim(),
+                color: category.color,
+                questions: category.questions.map((question) => ({
+                    difficulty: question.difficulty,
+                    text: question.text.trim(),
+                    answers: question.answers
+                        .filter((answer) => answer.text.trim().length > 0)
+                        .map((answer) => ({ text: answer.text.trim(), ...(answer.correct ? { correct: true } : {}) })),
+                    explanation: question.explanation.trim()
+                }))
+            };
+        }
+
+        function setStatus(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message ' + (type === 'info' ? '' : type);
+        }
+
+        function updateStats() {
+            const counts = {
+                categories: state.categories.length,
+                questions: 0,
+                easy: 0,
+                medium: 0,
+                hard: 0,
+                expert: 0
+            };
+
+            state.categories.forEach((category) => {
+                category.questions.forEach((question) => {
+                    counts.questions += 1;
+                    if (counts[question.difficulty] !== undefined) {
+                        counts[question.difficulty] += 1;
+                    }
+                });
+            });
+
+            const statsOrder = [
+                ['Catégories', counts.categories],
+                ['Questions', counts.questions],
+                ['Facile', counts.easy],
+                ['Moyen', counts.medium],
+                ['Difficile', counts.hard],
+                ['Expert', counts.expert]
+            ];
+
+            statsList.innerHTML = '';
+            statsOrder.forEach(([label, value]) => {
+                const li = document.createElement('li');
+                const spanLabel = document.createElement('span');
+                spanLabel.textContent = label;
+                const spanValue = document.createElement('span');
+                spanValue.textContent = value;
+                li.append(spanLabel, spanValue);
+                statsList.appendChild(li);
+            });
+
+            downloadButton.disabled = counts.categories === 0;
+        }
+
+        function renderCategories() {
+            categoriesContainer.innerHTML = '';
+
+            if (state.categories.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-state';
+                empty.innerHTML = 'Aucune catégorie pour le moment.<br>Utilisez « Ajouter une catégorie » pour commencer.';
+                categoriesContainer.appendChild(empty);
+                updateStats();
+                return;
+            }
+
+            state.categories.forEach((category, categoryIndex) => {
+                const card = document.createElement('article');
+                card.className = 'category-card';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+
+                const info = document.createElement('div');
+                info.className = 'category-info';
+
+                info.appendChild(createTextField('Nom de la catégorie', category.name, (value) => {
+                    category.name = value;
+                }));
+
+                info.appendChild(createTextField('Icône (emoji ou texte court)', category.icon, (value) => {
+                    category.icon = value;
+                }));
+
+                info.appendChild(createColorField('Couleur associée', category.color, (value) => {
+                    category.color = value;
+                }));
+
+                header.appendChild(info);
+
+                const controls = document.createElement('div');
+                controls.className = 'category-controls';
+
+                const summaryTag = document.createElement('span');
+                summaryTag.className = 'small-note';
+                summaryTag.textContent = category.questions.length + ' question(s)';
+                controls.appendChild(summaryTag);
+
+                const deleteCategoryButton = document.createElement('button');
+                deleteCategoryButton.className = 'danger';
+                deleteCategoryButton.type = 'button';
+                deleteCategoryButton.textContent = 'Supprimer la catégorie';
+                deleteCategoryButton.addEventListener('click', () => {
+                    if (confirm('Supprimer définitivement cette catégorie ?')) {
+                        state.categories.splice(categoryIndex, 1);
+                        renderCategories();
+                        setStatus('Catégorie supprimée.', 'warning');
+                    }
+                });
+                controls.appendChild(deleteCategoryButton);
+
+                header.appendChild(controls);
+                card.appendChild(header);
+
+                const questionsList = document.createElement('div');
+                questionsList.className = 'questions-list';
+
+                category.questions.forEach((question, questionIndex) => {
+                    const questionCard = document.createElement('details');
+                    questionCard.className = 'question-card';
+                    questionCard.open = category.questions.length <= 3;
+
+                    const summary = document.createElement('summary');
+                    updateQuestionSummary(summary, question, questionIndex);
+                    questionCard.appendChild(summary);
+
+                    const body = document.createElement('div');
+                    body.className = 'question-body';
+
+                    const questionGrid = document.createElement('div');
+                    questionGrid.className = 'question-grid';
+
+                    questionGrid.appendChild(createSelectField('Difficulté', question.difficulty, difficulties, (value) => {
+                        question.difficulty = value;
+                        updateQuestionSummary(summary, question, questionIndex);
+                        updateStats();
+                    }));
+
+                    questionGrid.appendChild(createTextField('Intitulé de la question', question.text, (value) => {
+                        question.text = value;
+                        updateQuestionSummary(summary, question, questionIndex);
+                    }, true));
+
+                    body.appendChild(questionGrid);
+
+                    body.appendChild(createTextareaField('Explication', question.explanation, (value) => {
+                        question.explanation = value;
+                    }));
+
+                    const answersSection = document.createElement('div');
+                    answersSection.className = 'answers';
+
+                    const answersHeader = document.createElement('div');
+                    answersHeader.className = 'answers-header';
+
+                    const answersTitle = document.createElement('span');
+                    answersTitle.textContent = 'Réponses possibles';
+                    answersHeader.appendChild(answersTitle);
+
+                    const addAnswerButton = document.createElement('button');
+                    addAnswerButton.type = 'button';
+                    addAnswerButton.className = 'secondary';
+                    addAnswerButton.textContent = 'Ajouter une réponse';
+                    addAnswerButton.addEventListener('click', () => {
+                        question.answers.push({ text: '', correct: question.answers.length === 0 });
+                        renderCategories();
+                    });
+                    answersHeader.appendChild(addAnswerButton);
+
+                    answersSection.appendChild(answersHeader);
+
+                    const answersNote = document.createElement('span');
+                    answersNote.className = 'small-note';
+                    answersNote.textContent = 'Sélectionnez la bonne réponse à l\'aide du bouton radio.';
+                    answersSection.appendChild(answersNote);
+
+                    question.answers.forEach((answer, answerIndex) => {
+                        const answerRow = document.createElement('div');
+                        answerRow.className = 'answer-row';
+
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = `correct-${categoryIndex}-${questionIndex}`;
+                        radio.checked = Boolean(answer.correct);
+                        radio.addEventListener('change', () => {
+                            question.answers.forEach((candidate, idx) => {
+                                candidate.correct = idx === answerIndex;
+                            });
+                        });
+                        answerRow.appendChild(radio);
+
+                        const answerInput = document.createElement('input');
+                        answerInput.type = 'text';
+                        answerInput.placeholder = 'Texte de la réponse';
+                        answerInput.value = answer.text;
+                        answerInput.addEventListener('input', (event) => {
+                            answer.text = event.target.value;
+                            updateQuestionSummary(summary, question, questionIndex);
+                        });
+                        answerRow.appendChild(answerInput);
+
+                        const removeAnswerButton = document.createElement('button');
+                        removeAnswerButton.type = 'button';
+                        removeAnswerButton.textContent = '×';
+                        removeAnswerButton.title = 'Supprimer cette réponse';
+                        removeAnswerButton.addEventListener('click', () => {
+                            if (question.answers.length <= 2) {
+                                setStatus('Une question doit conserver au moins deux propositions.', 'warning');
+                                return;
+                            }
+                            const wasCorrect = answer.correct;
+                            question.answers.splice(answerIndex, 1);
+                            if (wasCorrect && question.answers.length) {
+                                question.answers[0].correct = true;
+                            }
+                            renderCategories();
+                        });
+                        answerRow.appendChild(removeAnswerButton);
+
+                        answersSection.appendChild(answerRow);
+                    });
+
+                    body.appendChild(answersSection);
+
+                    const questionActions = document.createElement('div');
+                    questionActions.className = 'category-controls';
+
+                    const deleteQuestionButton = document.createElement('button');
+                    deleteQuestionButton.type = 'button';
+                    deleteQuestionButton.className = 'danger';
+                    deleteQuestionButton.textContent = 'Supprimer la question';
+                    deleteQuestionButton.addEventListener('click', () => {
+                        if (confirm('Supprimer définitivement cette question ?')) {
+                            category.questions.splice(questionIndex, 1);
+                            renderCategories();
+                            setStatus('Question supprimée.', 'warning');
+                        }
+                    });
+                    questionActions.appendChild(deleteQuestionButton);
+
+                    body.appendChild(questionActions);
+
+                    questionCard.appendChild(body);
+                    questionsList.appendChild(questionCard);
+                });
+
+                const addQuestionButton = document.createElement('button');
+                addQuestionButton.type = 'button';
+                addQuestionButton.textContent = 'Ajouter une question';
+                addQuestionButton.addEventListener('click', () => {
+                    category.questions.push(createEmptyQuestion());
+                    renderCategories();
+                    setStatus('Nouvelle question ajoutée.', 'success');
+                });
+
+                card.appendChild(questionsList);
+                card.appendChild(addQuestionButton);
+                categoriesContainer.appendChild(card);
+            });
+
+            updateStats();
+        }
+
+        function updateQuestionSummary(summary, question, questionIndex) {
+            const difficultyLabel = difficulties.find((item) => item.value === question.difficulty)?.label ?? 'Facile';
+            const preview = question.text.trim() ? question.text.trim().slice(0, 60) : 'Question sans titre';
+            summary.textContent = `Question ${questionIndex + 1} · ${difficultyLabel} · ${preview}`;
+        }
+
+        function createTextField(label, value, onChange, wide = false) {
+            const field = document.createElement('label');
+            field.className = 'field';
+            field.textContent = label;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = value;
+            input.addEventListener('input', (event) => {
+                onChange(event.target.value);
+            });
+
+            field.appendChild(input);
+            if (wide) {
+                field.style.gridColumn = '1 / -1';
+            }
+            return field;
+        }
+
+        function createColorField(label, value, onChange) {
+            const field = document.createElement('label');
+            field.className = 'field';
+            field.textContent = label;
+
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = value || '#4b5563';
+            input.addEventListener('input', (event) => {
+                onChange(event.target.value);
+            });
+
+            field.appendChild(input);
+            return field;
+        }
+
+        function createTextareaField(label, value, onChange) {
+            const field = document.createElement('label');
+            field.className = 'field';
+            field.textContent = label;
+
+            const textarea = document.createElement('textarea');
+            textarea.value = value;
+            textarea.addEventListener('input', (event) => {
+                onChange(event.target.value);
+            });
+
+            field.appendChild(textarea);
+            return field;
+        }
+
+        function createSelectField(label, value, options, onChange) {
+            const field = document.createElement('label');
+            field.className = 'field';
+            field.textContent = label;
+
+            const select = document.createElement('select');
+            options.forEach((option) => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.label;
+                if (option.value === value) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            });
+
+            select.addEventListener('change', (event) => {
+                onChange(event.target.value);
+            });
+
+            field.appendChild(select);
+            return field;
+        }
+
+        // Préparer un exemple vide afin de permettre l'ajout direct
+        state.categories = [];
+        renderCategories();
+    </script>
+</body>
+</html>
