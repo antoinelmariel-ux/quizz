@@ -1177,7 +1177,8 @@
 
     <footer class="app-footer">
         <span>© 2025 Quiz Alchimiste</span>
-        <span class="app-version">Version v1.0.3</span>
+        <span class="footer-note">Le contenu de ce module est entièrement sous la responsabilité de l’établissement</span>
+        <span class="app-version">Version v1.0.4</span>
     </footer>
 </body>
 </html><!DOCTYPE html>
@@ -2232,12 +2233,18 @@
             color: var(--text-secondary);
             font-size: 0.9rem;
             z-index: 9000;
+            flex-wrap: wrap;
+            text-align: center;
         }
 
         .app-footer .app-version {
             font-family: 'JetBrains Mono', monospace;
             font-weight: 600;
             color: var(--text-primary);
+        }
+
+        .app-footer .footer-note {
+            flex: 1 1 100%;
         }
 
         .timer-warning .timer-progress {
